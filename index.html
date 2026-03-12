@@ -216,7 +216,7 @@
   .cal-day.today.has-routine::after { background:#fff; }
   .cal-day.selected { outline:2px solid var(--primary); outline-offset:-2px; }
 
-  /* ─── Habit Streak Grid ─── */
+  /* ─── Habit Streak Grid (HabitCheckCalendar style) ─── */
   .streak-overview {
     background:var(--card); border-radius:16px; padding:16px;
     box-shadow:var(--shadow); margin-bottom:16px;
@@ -333,7 +333,9 @@
   .form-input:focus { border-color:var(--primary); background:#fff; }
   .form-row { display:flex; gap:8px; }
   .form-row .form-group { flex:1; }
-  .priority-select { display:flex; gap:8px; }
+  .priority-select {
+    display:flex; gap:8px;
+  }
   .priority-option {
     flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--border);
     text-align:center; font-size:12px; font-weight:600; cursor:pointer;
@@ -380,6 +382,37 @@
   }
   .todo-item:hover .delete-btn { opacity:1; }
 
+  /* ─── Routine detail modal ─── */
+  .routine-detail-header {
+    display:flex; align-items:center; gap:12px; margin-bottom:20px;
+  }
+  .detail-icon {
+    width:48px; height:48px; border-radius:14px; display:flex;
+    align-items:center; justify-content:center; font-size:24px;
+  }
+  .detail-name { font-size:18px; font-weight:700; }
+  .detail-desc { font-size:12px; color:var(--text-light); }
+  .detail-calendar {
+    display:grid; grid-template-columns:repeat(7,1fr); gap:3px;
+    margin-top:12px;
+  }
+  .detail-day {
+    aspect-ratio:1; border-radius:6px; display:flex; align-items:center;
+    justify-content:center; font-size:10px; font-weight:500; color:var(--text-light);
+  }
+
+  /* ─── Animations ─── */
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(10px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .todo-item, .routine-item { animation: slideIn 0.3s ease; }
+
+  /* ─── Scrollbar ─── */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
   /* ─── Context Menu ─── */
   .context-menu {
     position:fixed; background:var(--card); border-radius:12px;
@@ -394,15 +427,19 @@
   .context-item:hover { background:var(--bg); }
   .context-item.danger { color:var(--danger); }
 
-  @keyframes slideIn {
-    from { opacity:0; transform:translateY(10px); }
-    to { opacity:1; transform:translateY(0); }
+  /* ─── Toggle switch ─── */
+  .toggle-wrap { display:flex; align-items:center; gap:8px; }
+  .toggle {
+    width:44px; height:24px; border-radius:12px; background:var(--border);
+    position:relative; cursor:pointer; transition:0.3s;
   }
-  .todo-item, .routine-item { animation: slideIn 0.3s ease; }
-
-  ::-webkit-scrollbar { width:4px; }
-  ::-webkit-scrollbar-track { background:transparent; }
-  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+  .toggle.on { background:var(--success); }
+  .toggle::after {
+    content:''; position:absolute; top:2px; left:2px;
+    width:20px; height:20px; border-radius:50%; background:#fff;
+    transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { left:22px; }
 </style>
 </head>
 <body>
@@ -433,7 +470,9 @@
 <!-- CONTENT -->
 <div class="content-area" id="contentArea">
   <div class="panels-slider" id="panelsSlider">
+    <!-- TO-DO PANEL -->
     <div class="panel" id="todoPanel"></div>
+    <!-- ROUTINE PANEL -->
     <div class="panel" id="routinePanel"></div>
   </div>
 </div>
@@ -554,28 +593,30 @@ let state = {
   editingId: null
 };
 
+// Sample data if empty
 if (state.todos.length === 0) {
   state.todos = [
-    { id:'d1', text:'프로젝트 기획서 작성', list:'work', dueDate:getTodayStr(), note:'3페이지 분량', priority:'high', completed:false, createdAt:Date.now() },
-    { id:'d2', text:'알고리즘 문제 3개 풀기', list:'study', dueDate:getTodayStr(), note:'', priority:'medium', completed:false, createdAt:Date.now() },
-    { id:'d3', text:'장보기 - 우유, 계란, 빵', list:'personal', dueDate:'', note:'', priority:'low', completed:false, createdAt:Date.now() },
-    { id:'d4', text:'이메일 회신하기', list:'work', dueDate:getTodayStr(), note:'', priority:'high', completed:true, createdAt:Date.now() },
-    { id:'d5', text:'운동복 세탁', list:'personal', dueDate:'', note:'', priority:'low', completed:true, createdAt:Date.now() },
+    { id: 'd1', text: '프로젝트 기획서 작성', list: 'work', dueDate: getTodayStr(), note: '3페이지 분량', priority: 'high', completed: false, createdAt: Date.now() },
+    { id: 'd2', text: '알고리즘 문제 3개 풀기', list: 'study', dueDate: getTodayStr(), note: '', priority: 'medium', completed: false, createdAt: Date.now() },
+    { id: 'd3', text: '장보기 - 우유, 계란, 빵', list: 'personal', dueDate: '', note: '', priority: 'low', completed: false, createdAt: Date.now() },
+    { id: 'd4', text: '이메일 회신하기', list: 'work', dueDate: getTodayStr(), note: '', priority: 'high', completed: true, createdAt: Date.now() },
+    { id: 'd5', text: '운동복 세탁', list: 'personal', dueDate: '', note: '', priority: 'low', completed: true, createdAt: Date.now() },
   ];
 }
 if (state.routines.length === 0) {
   state.routines = [
-    { id:'r1', name:'아침 운동', icon:'💪', color:'#4A6CF7', days:[1,2,3,4,5], time:'07:00', createdAt:Date.now()-86400000*30 },
-    { id:'r2', name:'독서 30분', icon:'📖', color:'#34C759', days:[0,1,2,3,4,5,6], time:'22:00', createdAt:Date.now()-86400000*20 },
-    { id:'r3', name:'물 2L 마시기', icon:'💧', color:'#5AC8FA', days:[0,1,2,3,4,5,6], time:'', createdAt:Date.now()-86400000*15 },
-    { id:'r4', name:'명상 10분', icon:'🧘', color:'#AF52DE', days:[1,3,5], time:'06:30', createdAt:Date.now()-86400000*10 },
+    { id: 'r1', name: '아침 운동', icon: '💪', color: '#4A6CF7', days: [1,2,3,4,5], time: '07:00', createdAt: Date.now() - 86400000*30 },
+    { id: 'r2', name: '독서 30분', icon: '📖', color: '#34C759', days: [0,1,2,3,4,5,6], time: '22:00', createdAt: Date.now() - 86400000*20 },
+    { id: 'r3', name: '물 2L 마시기', icon: '💧', color: '#5AC8FA', days: [0,1,2,3,4,5,6], time: '', createdAt: Date.now() - 86400000*15 },
+    { id: 'r4', name: '명상 10분', icon: '🧘', color: '#AF52DE', days: [1,3,5], time: '06:30', createdAt: Date.now() - 86400000*10 },
   ];
-  var now = new Date();
-  for (var i = 1; i <= 28; i++) {
-    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-    var key = dateToStr(d);
+  // Generate some sample checks
+  const now = new Date();
+  for (let i = 1; i <= 28; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const key = dateToStr(d);
     state.routineChecks[key] = {};
-    state.routines.forEach(function(r) {
+    state.routines.forEach(r => {
       if (r.days.includes(d.getDay()) && Math.random() > 0.3) {
         state.routineChecks[key][r.id] = true;
       }
@@ -583,23 +624,24 @@ if (state.routines.length === 0) {
   }
 }
 
-var subTabConfig = {
+const subTabConfig = {
   0: [
-    { label:'📥 모두', filter:'all' },
-    { label:'⭐ 중요', filter:'important' },
-    { label:'👤 개인', filter:'personal' },
-    { label:'💼 업무', filter:'work' },
-    { label:'📚 공부', filter:'study' },
-    { label:'✅ 완료', filter:'completed' },
+    { label: '📥 모두', filter: 'all' },
+    { label: '⭐ 중요', filter: 'important' },
+    { label: '👤 개인', filter: 'personal' },
+    { label: '💼 업무', filter: 'work' },
+    { label: '📚 공부', filter: 'study' },
+    { label: '✅ 완료', filter: 'completed' },
   ],
   1: [
-    { label:'📊 대시보드', filter:'dashboard' },
-    { label:'📅 캘린더', filter:'calendar' },
-    { label:'📋 루틴 목록', filter:'list' },
-    { label:'🏆 통계', filter:'stats' },
+    { label: '📊 대시보드', filter: 'dashboard' },
+    { label: '📅 캘린더', filter: 'calendar' },
+    { label: '📋 루틴 목록', filter: 'list' },
+    { label: '🏆 통계', filter: 'stats' },
   ]
 };
 
+// ─── HELPERS ───
 function uid() { return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2,5); }
 function getTodayStr() { return dateToStr(new Date()); }
 function dateToStr(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -611,39 +653,41 @@ function save() {
 function getDayName(n) { return ['일','월','화','수','목','금','토'][n]; }
 function formatDate(str) {
   if(!str) return '';
-  var d = new Date(str+'T00:00:00');
-  var today = new Date(); today.setHours(0,0,0,0);
-  var diff = (d - today) / 86400000;
+  const d = new Date(str+'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = (d - today) / 86400000;
   if(diff===0) return '오늘';
   if(diff===1) return '내일';
   if(diff===-1) return '어제';
-  return (d.getMonth()+1)+'/'+d.getDate();
+  return `${d.getMonth()+1}/${d.getDate()}`;
 }
 
+// ─── TAB SWITCHING ───
 function switchMainTab(idx) {
   state.currentMainTab = idx;
   state.currentSubTab = 0;
-  document.querySelectorAll('.main-tab').forEach(function(t,i) { t.classList.toggle('active', i===idx); });
+  document.querySelectorAll('.main-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
   document.getElementById('tabIndicator').style.left = (idx*50)+'%';
-  document.getElementById('panelsSlider').style.transform = 'translateX(-'+(idx*50)+'%)';
+  document.getElementById('panelsSlider').style.transform = `translateX(-${idx*50}%)`;
   renderSubTabs();
   renderCurrentPanel();
-  setTimeout(function() {
-    var h = document.querySelector('.top-bar').offsetHeight;
+  // Adjust content top margin
+  setTimeout(() => {
+    const h = document.querySelector('.top-bar').offsetHeight;
     document.getElementById('contentArea').style.marginTop = h + 'px';
   }, 50);
 }
 
 function renderSubTabs() {
-  var tabs = subTabConfig[state.currentMainTab];
-  var wrapper = document.getElementById('subTabsWrapper');
-  var container = document.getElementById('subTabs');
+  const tabs = subTabConfig[state.currentMainTab];
+  const wrapper = document.getElementById('subTabsWrapper');
+  const container = document.getElementById('subTabs');
   container.innerHTML = '';
-  tabs.forEach(function(t, i) {
-    var btn = document.createElement('div');
+  tabs.forEach((t, i) => {
+    const btn = document.createElement('div');
     btn.className = 'sub-tab' + (i === state.currentSubTab ? ' active' : '');
     btn.textContent = t.label;
-    btn.onclick = function() {
+    btn.onclick = () => {
       state.currentSubTab = i;
       renderSubTabs();
       renderCurrentPanel();
@@ -658,158 +702,670 @@ function renderCurrentPanel() {
   else renderRoutinePanel();
 }
 
+// ─── TO-DO RENDERING ───
 function renderTodoPanel() {
-  var panel = document.getElementById('todoPanel');
-  var filter = subTabConfig[0][state.currentSubTab].filter;
-  var todos = state.todos.slice();
+  const panel = document.getElementById('todoPanel');
+  const filter = subTabConfig[0][state.currentSubTab].filter;
+  let todos = [...state.todos];
 
-  if (filter === 'completed') todos = todos.filter(function(t){ return t.completed; });
-  else if (filter === 'important') todos = todos.filter(function(t){ return t.priority === 'high' && !t.completed; });
-  else if (filter !== 'all') todos = todos.filter(function(t){ return t.list === filter; });
+  if (filter === 'completed') todos = todos.filter(t => t.completed);
+  else if (filter === 'important') todos = todos.filter(t => t.priority === 'high' && !t.completed);
+  else if (filter === 'all') {} // all
+  else todos = todos.filter(t => t.list === filter);
 
-  var active = todos.filter(function(t){ return !t.completed; });
-  var completed = todos.filter(function(t){ return t.completed; });
-  var html = '';
+  const active = todos.filter(t => !t.completed);
+  const completed = todos.filter(t => t.completed);
+
+  let html = '';
 
   if (filter !== 'completed' && active.length > 0) {
-    html += '<div class="todo-section"><div class="section-header"><span class="section-title">할 일</span><span class="section-count">'+active.length+'</span></div><div class="todo-list">'+active.map(todoItemHTML).join('')+'</div></div>';
+    html += `<div class="todo-section">
+      <div class="section-header">
+        <span class="section-title">할 일</span>
+        <span class="section-count">${active.length}</span>
+      </div>
+      <div class="todo-list">${active.map(t => todoItemHTML(t)).join('')}</div>
+    </div>`;
   }
+
   if (completed.length > 0 && (filter === 'completed' || filter === 'all')) {
-    html += '<div class="todo-section"><div class="section-header"><span class="section-title">완료됨</span><span class="section-count">'+completed.length+'</span></div><div class="todo-list">'+completed.map(todoItemHTML).join('')+'</div></div>';
+    html += `<div class="todo-section">
+      <div class="section-header">
+        <span class="section-title">완료됨</span>
+        <span class="section-count">${completed.length}</span>
+      </div>
+      <div class="todo-list">${completed.map(t => todoItemHTML(t)).join('')}</div>
+    </div>`;
   }
+
   if (todos.length === 0) {
-    html = '<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">할일이 없습니다</div><div class="empty-desc">+ 버튼을 눌러 새 할일을 추가하세요</div></div>';
+    html = `<div class="empty-state">
+      <div class="empty-icon">📝</div>
+      <div class="empty-title">할일이 없습니다</div>
+      <div class="empty-desc">+ 버튼을 눌러 새 할일을 추가하세요</div>
+    </div>`;
   }
+
   panel.innerHTML = html;
 }
 
 function todoItemHTML(t) {
-  var pClass = t.priority==='high'?'priority-high':(t.priority==='medium'?'priority-medium':'priority-low');
-  var tagClass = t.priority==='high'?'tag-urgent':(t.priority==='medium'?'tag-normal':'tag-low');
-  var tagText = t.priority==='high'?'긴급':(t.priority==='medium'?'보통':'여유');
-  var listIcons = {inbox:'📥',personal:'👤',work:'💼',study:'📚'};
-  return '<div class="todo-item '+(t.completed?'completed':'')+'" oncontextmenu="showContext(event,\'todo\',\''+t.id+'\')">'
-    +'<div class="todo-priority-bar '+pClass+'"></div>'
-    +'<div class="todo-checkbox '+(t.completed?'checked':'')+'" onclick="toggleTodo(\''+t.id+'\')"></div>'
-    +'<div class="todo-info" onclick="toggleTodo(\''+t.id+'\')">'
-    +'<div class="todo-text">'+t.text+'</div>'
-    +'<div class="todo-meta">'
-    +(t.dueDate?'<span>📅 '+formatDate(t.dueDate)+'</span>':'')
-    +'<span>'+(listIcons[t.list]||'')+' '+t.list+'</span>'
-    +'<span class="todo-tag '+tagClass+'">'+tagText+'</span>'
-    +(t.note?'<span>📎 메모</span>':'')
-    +'</div></div>'
-    +'<button class="delete-btn" onclick="deleteTodo(\''+t.id+'\')">✕</button>'
-    +'</div>';
+  const pClass = t.priority === 'high' ? 'priority-high' : (t.priority === 'medium' ? 'priority-medium' : 'priority-low');
+  const tagClass = t.priority === 'high' ? 'tag-urgent' : (t.priority === 'medium' ? 'tag-normal' : 'tag-low');
+  const tagText = t.priority === 'high' ? '긴급' : (t.priority === 'medium' ? '보통' : '여유');
+  const listIcons = { inbox:'📥', personal:'👤', work:'💼', study:'📚' };
+
+  return `<div class="todo-item ${t.completed?'completed':''}" oncontextmenu="showContext(event,'todo','${t.id}')">
+    <div class="todo-priority-bar ${pClass}"></div>
+    <div class="todo-checkbox ${t.completed?'checked':''}" onclick="toggleTodo('${t.id}')"></div>
+    <div class="todo-info" onclick="toggleTodo('${t.id}')">
+      <div class="todo-text">${t.text}</div>
+      <div class="todo-meta">
+        ${t.dueDate ? `<span>📅 ${formatDate(t.dueDate)}</span>` : ''}
+        <span>${listIcons[t.list]||''} ${t.list}</span>
+        <span class="todo-tag ${tagClass}">${tagText}</span>
+        ${t.note ? '<span>📎 메모</span>' : ''}
+      </div>
+    </div>
+    <button class="delete-btn" onclick="deleteTodo('${t.id}')">✕</button>
+  </div>`;
 }
 
 function toggleTodo(id) {
-  var t = state.todos.find(function(x){return x.id===id;});
-  if(t){ t.completed=!t.completed; save(); renderTodoPanel(); }
+  const t = state.todos.find(x => x.id === id);
+  if (t) { t.completed = !t.completed; save(); renderTodoPanel(); }
 }
 function deleteTodo(id) {
-  state.todos = state.todos.filter(function(x){return x.id!==id;});
+  state.todos = state.todos.filter(x => x.id !== id);
   save(); renderTodoPanel();
 }
 
+// ─── ROUTINE RENDERING ───
 function renderRoutinePanel() {
-  var panel = document.getElementById('routinePanel');
-  var filter = subTabConfig[1][state.currentSubTab].filter;
-  if(filter==='dashboard') panel.innerHTML = renderRoutineDashboard();
-  else if(filter==='calendar') panel.innerHTML = renderRoutineCalendar();
-  else if(filter==='list') panel.innerHTML = renderRoutineList();
-  else if(filter==='stats') panel.innerHTML = renderRoutineStats();
+  const panel = document.getElementById('routinePanel');
+  const filter = subTabConfig[1][state.currentSubTab].filter;
+
+  if (filter === 'dashboard') panel.innerHTML = renderRoutineDashboard();
+  else if (filter === 'calendar') panel.innerHTML = renderRoutineCalendar();
+  else if (filter === 'list') panel.innerHTML = renderRoutineList();
+  else if (filter === 'stats') panel.innerHTML = renderRoutineStats();
 }
 
 function renderRoutineDashboard() {
-  var today = getTodayStr();
-  var todayNum = new Date().getDay();
-  var todayRoutines = state.routines.filter(function(r){return r.days.includes(todayNum);});
-  var checks = state.routineChecks[today] || {};
-  var doneCount = todayRoutines.filter(function(r){return checks[r.id];}).length;
+  const today = getTodayStr();
+  const todayNum = new Date().getDay();
+  const todayRoutines = state.routines.filter(r => r.days.includes(todayNum));
+  const checks = state.routineChecks[today] || {};
+  const doneCount = todayRoutines.filter(r => checks[r.id]).length;
 
-  var html = '<div class="routine-stats">'
-    +'<div class="stat-card"><div class="stat-value" style="color:var(--primary)">'+todayRoutines.length+'</div><div class="stat-label">오늘 루틴</div></div>'
-    +'<div class="stat-card"><div class="stat-value" style="color:var(--success)">'+doneCount+'</div><div class="stat-label">완료</div></div>'
-    +'<div class="stat-card"><div class="stat-value" style="color:var(--warning)">'+(todayRoutines.length?Math.round(doneCount/todayRoutines.length*100):0)+'%</div><div class="stat-label">달성률</div></div>'
-    +'</div>';
+  let html = `
+    <div class="routine-stats">
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--primary)">${todayRoutines.length}</div>
+        <div class="stat-label">오늘 루틴</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--success)">${doneCount}</div>
+        <div class="stat-label">완료</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:${todayRoutines.length?'var(--warning)':'var(--text-light)'}">${todayRoutines.length ? Math.round(doneCount/todayRoutines.length*100) : 0}%</div>
+        <div class="stat-label">달성률</div>
+      </div>
+    </div>
+  `;
 
+  // Streak overview
   html += renderStreakOverview();
-  html += '<div style="margin-top:16px;"><div class="section-header"><span class="section-title">오늘의 루틴</span><span class="section-count">'+doneCount+'/'+todayRoutines.length+'</span></div><div class="routine-list">';
 
-  if(todayRoutines.length===0) {
-    html += '<div class="empty-state" style="padding:30px"><div class="empty-icon">🎉</div><div class="empty-title">오늘은 쉬는 날!</div></div>';
+  // Today's routines
+  html += `<div style="margin-top:16px;">
+    <div class="section-header">
+      <span class="section-title">오늘의 루틴</span>
+      <span class="section-count">${doneCount}/${todayRoutines.length}</span>
+    </div>
+    <div class="routine-list">`;
+
+  if (todayRoutines.length === 0) {
+    html += `<div class="empty-state" style="padding:30px">
+      <div class="empty-icon">🎉</div>
+      <div class="empty-title">오늘은 쉬는 날!</div>
+    </div>`;
   }
-  todayRoutines.forEach(function(r){ html += routineItemHTML(r, checks[r.id], true); });
-  html += '</div></div>';
+
+  todayRoutines.forEach(r => {
+    const done = checks[r.id];
+    html += routineItemHTML(r, done, true);
+  });
+
+  html += `</div></div>`;
   return html;
 }
 
 function renderStreakOverview() {
-  var weeks=4, cells=weeks*7, today=new Date(), cellsHtml='';
-  for(var i=cells-1;i>=0;i--){
-    var d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-i);
-    var key=dateToStr(d);
-    var dayChecks=state.routineChecks[key]||{};
-    var dayRoutines=state.routines.filter(function(r){return r.days.includes(d.getDay());});
-    var total=dayRoutines.length;
-    var done=dayRoutines.filter(function(r){return dayChecks[r.id];}).length;
-    var ratio=total>0?done/total:0;
-    var level=0;
-    if(ratio>0)level=1;if(ratio>=0.5)level=2;if(ratio>=0.75)level=3;if(ratio>=1)level=4;
-    cellsHtml+='<div class="streak-cell level-'+level+'" title="'+key+': '+done+'/'+total+'"></div>';
+  const weeks = 4;
+  const cells = weeks * 7;
+  const today = new Date();
+  let cellsHtml = '';
+
+  for (let i = cells - 1; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    const key = dateToStr(d);
+    const dayChecks = state.routineChecks[key] || {};
+    const dayRoutines = state.routines.filter(r => r.days.includes(d.getDay()));
+    const total = dayRoutines.length;
+    const done = dayRoutines.filter(r => dayChecks[r.id]).length;
+    const ratio = total > 0 ? done / total : 0;
+    let level = 0;
+    if (ratio > 0) level = 1;
+    if (ratio >= 0.5) level = 2;
+    if (ratio >= 0.75) level = 3;
+    if (ratio >= 1) level = 4;
+
+    cellsHtml += `<div class="streak-cell level-${level}" title="${key}: ${done}/${total}"></div>`;
   }
-  return '<div class="streak-overview"><div class="streak-title">🔥 최근 4주 달성 현황</div><div class="streak-grid">'+cellsHtml+'</div>'
-    +'<div class="streak-legend"><span>적음</span>'
-    +'<div class="streak-legend-cell" style="background:#EBEDF0"></div>'
-    +'<div class="streak-legend-cell" style="background:#9BE9A8"></div>'
-    +'<div class="streak-legend-cell" style="background:#40C463"></div>'
-    +'<div class="streak-legend-cell" style="background:#30A14E"></div>'
-    +'<div class="streak-legend-cell" style="background:#216E39"></div>'
-    +'<span>많음</span></div></div>';
+
+  return `<div class="streak-overview">
+    <div class="streak-title">🔥 최근 4주 달성 현황</div>
+    <div class="streak-grid">${cellsHtml}</div>
+    <div class="streak-legend">
+      <span>적음</span>
+      <div class="streak-legend-cell" style="background:#EBEDF0"></div>
+      <div class="streak-legend-cell" style="background:#9BE9A8"></div>
+      <div class="streak-legend-cell" style="background:#40C463"></div>
+      <div class="streak-legend-cell" style="background:#30A14E"></div>
+      <div class="streak-legend-cell" style="background:#216E39"></div>
+      <span>많음</span>
+    </div>
+  </div>`;
 }
 
 function renderRoutineCalendar() {
-  var year=state.calendarYear, month=state.calendarMonth;
-  var firstDay=new Date(year,month,1).getDay();
-  var daysInMonth=new Date(year,month+1,0).getDate();
-  var today=new Date(), todayStr=getTodayStr();
-  var monthNames=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  var daysHtml='';
-  var prevDays=new Date(year,month,0).getDate();
-  for(var i=firstDay-1;i>=0;i--) daysHtml+='<div class="cal-day other-month">'+(prevDays-i)+'</div>';
-  for(var d=1;d<=daysInMonth;d++){
-    var dateObj=new Date(year,month,d);
-    var key=dateToStr(dateObj);
-    var isToday=key===todayStr;
-    var chk=state.routineChecks[key]||{};
-    var hasRoutine=state.routines.some(function(r){return r.days.includes(dateObj.getDay())&&chk[r.id];});
-    daysHtml+='<div class="cal-day'+(isToday?' today':'')+(hasRoutine?' has-routine':'')+'">'+d+'</div>';
+  const year = state.calendarYear;
+  const month = state.calendarMonth;
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const todayStr = getTodayStr();
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  let daysHtml = '';
+  // Previous month days
+  const prevDays = new Date(year, month, 0).getDate();
+  for (let i = firstDay - 1; i >= 0; i--) {
+    daysHtml += `<div class="cal-day other-month">${prevDays - i}</div>`;
   }
-  var totalCells=firstDay+daysInMonth;
-  var remaining=(7-totalCells%7)%7;
-  for(var i=1;i<=remaining;i++) daysHtml+='<div class="cal-day other-month">'+i+'</div>';
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateObj = new Date(year, month, d);
+    const key = dateToStr(dateObj);
+    const isToday = key === todayStr;
+    const checks = state.routineChecks[key] || {};
+    const dayRoutines = state.routines.filter(r => r.days.includes(dateObj.getDay()));
+    const hasRoutine = dayRoutines.some(r => checks[r.id]);
+    daysHtml += `<div class="cal-day${isToday?' today':''}${hasRoutine?' has-routine':''}">${d}</div>`;
+  }
+  // Next month
+  const totalCells = firstDay + daysInMonth;
+  const remaining = (7 - totalCells % 7) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    daysHtml += `<div class="cal-day other-month">${i}</div>`;
+  }
 
-  var html='<div class="routine-calendar"><div class="cal-header"><div class="cal-title">'+year+'년 '+monthNames[month]+'</div>'
-    +'<div class="cal-nav"><button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button><button class="cal-nav-btn" onclick="changeMonth(1)">›</button></div></div>'
-    +'<div class="cal-weekdays"><div class="cal-weekday">일</div><div class="cal-weekday">월</div><div class="cal-weekday">화</div><div class="cal-weekday">수</div><div class="cal-weekday">목</div><div class="cal-weekday">금</div><div class="cal-weekday">토</div></div>'
-    +'<div class="cal-days">'+daysHtml+'</div></div>';
+  let html = `<div class="routine-calendar">
+    <div class="cal-header">
+      <div class="cal-title">${year}년 ${monthNames[month]}</div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="cal-weekdays">
+      <div class="cal-weekday">일</div><div class="cal-weekday">월</div>
+      <div class="cal-weekday">화</div><div class="cal-weekday">수</div>
+      <div class="cal-weekday">목</div><div class="cal-weekday">금</div>
+      <div class="cal-weekday">토</div>
+    </div>
+    <div class="cal-days">${daysHtml}</div>
+  </div>`;
 
-  html+=renderStreakOverview();
-  html+='<div class="section-header"><span class="section-title">이번 달 루틴별 현황</span></div><div class="routine-list">';
-  state.routines.forEach(function(r){
-    var done=0,total=0;
-    for(var d=1;d<=daysInMonth;d++){
-      var dateObj=new Date(year,month,d);
-      if(dateObj>today)break;
-      if(r.days.includes(dateObj.getDay())){
+  html += renderStreakOverview();
+
+  // Month summary per routine
+  html += `<div class="section-header"><span class="section-title">이번 달 루틴별 현황</span></div>`;
+  html += `<div class="routine-list">`;
+  state.routines.forEach(r => {
+    let done = 0, total = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj = new Date(year, month, d);
+      if (dateObj > today) break;
+      if (r.days.includes(dateObj.getDay())) {
         total++;
-        var key=dateToStr(dateObj);
-        if(state.routineChecks[key]&&state.routineChecks[key][r.id])done++;
+        const key = dateToStr(dateObj);
+        if (state.routineChecks[key] && state.routineChecks[key][r.id]) done++;
       }
     }
-    var pct=total>0?Math.round(done/total*100):0;
-    html+='<div class="routine-item"><div class="routine-item-header"><div class="routine-name-wrap">'
-      +'<div class="routine-icon" style="background:'+r.color+'22;color:'+r.color+'">'+r.icon+'</div>'
-      +'<div><div class="routine-name">'+r.name+'</div><div class="routine-freq">'+done+'/'+total+'일 완료</div></div></div>'
-      +'<div class="routine-streak-badge" style="background:'+(pct>=80?'#E5FFE8':pct>=50
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+    html += `<div class="routine-item">
+      <div class="routine-item-header">
+        <div class="routine-name-wrap">
+          <div class="routine-icon" style="background:${r.color}22;color:${r.color}">${r.icon}</div>
+          <div><div class="routine-name">${r.name}</div>
+          <div class="routine-freq">${done}/${total}일 완료</div></div>
+        </div>
+        <div class="routine-streak-badge" style="background:${pct>=80?'#E5FFE8':pct>=50?'#FFF5E5':'#FFE5E5'};color:${pct>=80?'var(--success)':pct>=50?'var(--warning)':'var(--danger)'}">
+          ${pct}%
+        </div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  return html;
+}
+
+function renderRoutineList() {
+  let html = `<div class="section-header">
+    <span class="section-title">전체 루틴</span>
+    <span class="section-count">${state.routines.length}개</span>
+  </div>
+  <div class="routine-list">`;
+
+  if (state.routines.length === 0) {
+    html += `<div class="empty-state">
+      <div class="empty-icon">🔄</div>
+      <div class="empty-title">등록된 루틴이 없습니다</div>
+      <div class="empty-desc">+ 버튼을 눌러 새 루틴을 추가하세요</div>
+    </div>`;
+  }
+
+  state.routines.forEach(r => {
+    html += routineItemHTML(r, false, false);
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function routineItemHTML(r, isDone, showWeek) {
+  const streak = getStreak(r);
+  const today = new Date();
+  const todayKey = getTodayStr();
+  const checks = state.routineChecks[todayKey] || {};
+
+  let weekHtml = '';
+  if (showWeek) {
+    weekHtml = '<div class="routine-week-check">';
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+      const key = dateToStr(d);
+      const dayChecks = state.routineChecks[key] || {};
+      const isTarget = r.days.includes(d.getDay());
+      const checked = dayChecks[r.id];
+      const isToday = i === 0;
+      let cls = 'week-dot';
+      if (isToday) cls += ' today-dot';
+      if (checked) cls += ' checked';
+      else if (isTarget && !isToday && i > 0) cls += ' missed';
+      weekHtml += `<div class="${cls}" onclick="${isToday ? `toggleRoutineCheck('${r.id}')` : ''}">${getDayName(d.getDay())}</div>`;
+    }
+    weekHtml += '</div>';
+  }
+
+  return `<div class="routine-item" oncontextmenu="showContext(event,'routine','${r.id}')">
+    <div class="routine-item-header">
+      <div class="routine-name-wrap">
+        <div class="routine-icon" style="background:${r.color}22;color:${r.color}">${r.icon}</div>
+        <div>
+          <div class="routine-name">${r.name}</div>
+          <div class="routine-freq">${r.days.map(d=>getDayName(d)).join(', ')} ${r.time ? '• '+r.time : ''}</div>
+        </div>
+      </div>
+      <div class="routine-streak-badge" style="background:${r.color}18;color:${r.color}">
+        🔥 ${streak}일
+      </div>
+    </div>
+    ${showWeek ? weekHtml : ''}
+    ${showWeek && !isDone ? `<div style="margin-top:8px;text-align:center;">
+      <button onclick="toggleRoutineCheck('${r.id}')" style="padding:8px 24px;border-radius:10px;border:none;background:${checks[r.id]?'var(--success)':r.color};color:#fff;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;transition:0.2s;">
+        ${checks[r.id] ? '✅ 완료!' : '체크하기'}
+      </button>
+    </div>` : ''}
+  </div>`;
+}
+
+function getStreak(routine) {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    if (!routine.days.includes(d.getDay())) continue;
+    const key = dateToStr(d);
+    const checks = state.routineChecks[key] || {};
+    if (checks[routine.id]) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function renderRoutineStats() {
+  // Overall stats
+  const today = new Date();
+  let totalChecked = 0, totalPossible = 0;
+  let bestDay = [0,0,0,0,0,0,0];
+  let bestDayTotal = [0,0,0,0,0,0,0];
+
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    const key = dateToStr(d);
+    const checks = state.routineChecks[key] || {};
+    state.routines.forEach(r => {
+      if (r.days.includes(d.getDay())) {
+        totalPossible++;
+        bestDayTotal[d.getDay()]++;
+        if (checks[r.id]) {
+          totalChecked++;
+          bestDay[d.getDay()]++;
+        }
+      }
+    });
+  }
+
+  const overallPct = totalPossible > 0 ? Math.round(totalChecked/totalPossible*100) : 0;
+  let bestDayIdx = 0;
+  bestDay.forEach((v,i) => { if(bestDayTotal[i]>0 && v/bestDayTotal[i] > (bestDayTotal[bestDayIdx]>0?bestDay[bestDayIdx]/bestDayTotal[bestDayIdx]:0)) bestDayIdx=i; });
+
+  // Longest streak per routine
+  let longestStreak = 0, longestRoutine = '';
+  state.routines.forEach(r => {
+    let s = 0, max = 0;
+    for (let i = 0; i < 90; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+      if (!r.days.includes(d.getDay())) continue;
+      const key = dateToStr(d);
+      const checks = state.routineChecks[key] || {};
+      if (checks[r.id]) { s++; max = Math.max(max, s); }
+      else s = 0;
+    }
+    if (max > longestStreak) { longestStreak = max; longestRoutine = r.name; }
+  });
+
+  let html = `
+    <div class="routine-stats">
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--primary)">${overallPct}%</div>
+        <div class="stat-label">30일 달성률</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--success)">${totalChecked}</div>
+        <div class="stat-label">30일 체크</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning)">🔥${longestStreak}</div>
+        <div class="stat-label">최장 연속</div>
+      </div>
+    </div>
+    <div class="stat-card" style="border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px;background:var(--card);">
+      <div style="font-size:13px;font-weight:600;color:var(--text-light);margin-bottom:8px;">📊 요일별 달성률</div>
+      <div style="display:flex;gap:6px;align-items:flex-end;height:120px;">
+  `;
+
+  for (let i = 0; i < 7; i++) {
+    const pct = bestDayTotal[i] > 0 ? Math.round(bestDay[i]/bestDayTotal[i]*100) : 0;
+    const color = i===0 ? 'var(--danger)' : i===6 ? 'var(--primary)' : 'var(--success)';
+    html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <span style="font-size:10px;font-weight:600;color:var(--text-light)">${pct}%</span>
+      <div style="width:100%;background:${color}33;border-radius:6px;height:${Math.max(pct, 5)}%;position:relative;">
+        <div style="position:absolute;bottom:0;width:100%;height:100%;background:${color};border-radius:6px;"></div>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:var(--text-light)">${getDayName(i)}</span>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+
+  // Per-routine stats
+  html += `<div class="section-header"><span class="section-title">루틴별 통계</span></div>`;
+  html += `<div class="routine-list">`;
+  state.routines.forEach(r => {
+    const streak = getStreak(r);
+    let done30 = 0, total30 = 0;
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+      if (r.days.includes(d.getDay())) {
+        total30++;
+        const key = dateToStr(d);
+        if (state.routineChecks[key] && state.routineChecks[key][r.id]) done30++;
+      }
+    }
+    const pct = total30 > 0 ? Math.round(done30/total30*100) : 0;
+    html += `<div class="routine-item">
+      <div class="routine-item-header">
+        <div class="routine-name-wrap">
+          <div class="routine-icon" style="background:${r.color}22;color:${r.color}">${r.icon}</div>
+          <div>
+            <div class="routine-name">${r.name}</div>
+            <div class="routine-freq">30일: ${done30}/${total30}일 • 연속 ${streak}일</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${r.color};border-radius:4px;transition:0.5s;"></div>
+      </div>
+      <div style="text-align:right;font-size:11px;font-weight:600;color:${r.color};margin-top:4px;">${pct}%</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  if (longestRoutine) {
+    html += `<div style="text-align:center;padding:16px;color:var(--text-light);font-size:12px;">
+      🏆 최장 연속 기록: <strong>${longestRoutine}</strong> (${longestStreak}일)
+    </div>`;
+  }
+
+  return html;
+}
+
+// ─── INTERACTIONS ───
+function toggleRoutineCheck(routineId) {
+  const today = getTodayStr();
+  if (!state.routineChecks[today]) state.routineChecks[today] = {};
+  state.routineChecks[today][routineId] = !state.routineChecks[today][routineId];
+  save();
+  renderRoutinePanel();
+}
+
+function changeMonth(delta) {
+  state.calendarMonth += delta;
+  if (state.calendarMonth > 11) { state.calendarMonth = 0; state.calendarYear++; }
+  if (state.calendarMonth < 0) { state.calendarMonth = 11; state.calendarYear--; }
+  renderRoutinePanel();
+}
+
+// ─── MODALS ───
+function openAddModal() {
+  state.editingId = null;
+  if (state.currentMainTab === 0) {
+    document.getElementById('todoModalTitle').textContent = '✏️ 새 할일 추가';
+    document.getElementById('todoInput').value = '';
+    document.getElementById('todoDueDate').value = getTodayStr();
+    document.getElementById('todoNote').value = '';
+    document.getElementById('todoListSelect').value = 'inbox';
+    selectPriority('medium');
+    openModal('todoModal');
+  } else {
+    document.getElementById('routineModalTitle').textContent = '🔄 새 루틴 추가';
+    document.getElementById('routineInput').value = '';
+    document.getElementById('routineTime').value = '';
+    document.querySelectorAll('#daySelect .day-option').forEach(d => d.classList.add('selected'));
+    document.querySelectorAll('#iconSelect .color-option').forEach((d,i) => d.classList.toggle('selected', i===0));
+    document.querySelectorAll('#colorSelect .color-option').forEach((d,i) => d.classList.toggle('selected', i===0));
+    openModal('routineModal');
+  }
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('active'); });
+});
+
+function selectPriority(val) {
+  document.querySelectorAll('#prioritySelect .priority-option').forEach(o => {
+    o.classList.toggle('selected', o.dataset.val === val);
+  });
+}
+function selectIcon(el) {
+  document.querySelectorAll('#iconSelect .color-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectColor(el) {
+  document.querySelectorAll('#colorSelect .color-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function toggleDay(el) { el.classList.toggle('selected'); }
+
+function saveTodo() {
+  const text = document.getElementById('todoInput').value.trim();
+  if (!text) { document.getElementById('todoInput').focus(); return; }
+
+  const priority = document.querySelector('#prioritySelect .priority-option.selected')?.dataset.val || 'medium';
+  const data = {
+    id: state.editingId || uid(),
+    text,
+    list: document.getElementById('todoListSelect').value,
+    dueDate: document.getElementById('todoDueDate').value,
+    note: document.getElementById('todoNote').value.trim(),
+    priority,
+    completed: false,
+    createdAt: Date.now()
+  };
+
+  if (state.editingId) {
+    const idx = state.todos.findIndex(t => t.id === state.editingId);
+    if (idx >= 0) { data.completed = state.todos[idx].completed; state.todos[idx] = data; }
+  } else {
+    state.todos.unshift(data);
+  }
+
+  save();
+  closeModal('todoModal');
+  renderTodoPanel();
+  state.editingId = null;
+}
+
+function saveRoutine() {
+  const name = document.getElementById('routineInput').value.trim();
+  if (!name) { document.getElementById('routineInput').focus(); return; }
+
+  const icon = document.querySelector('#iconSelect .color-option.selected')?.dataset.icon || '💪';
+  const color = document.querySelector('#colorSelect .color-option.selected')?.dataset.color || '#4A6CF7';
+  const days = [...document.querySelectorAll('#daySelect .day-option.selected')].map(d => parseInt(d.dataset.day));
+  const time = document.getElementById('routineTime').value;
+
+  const data = {
+    id: state.editingId || uid(),
+    name, icon, color, days, time,
+    createdAt: Date.now()
+  };
+
+  if (state.editingId) {
+    const idx = state.routines.findIndex(r => r.id === state.editingId);
+    if (idx >= 0) state.routines[idx] = data;
+  } else {
+    state.routines.push(data);
+  }
+
+  save();
+  closeModal('routineModal');
+  renderRoutinePanel();
+  state.editingId = null;
+}
+
+// ─── CONTEXT MENU ───
+let contextData = {};
+function showContext(e, type, id) {
+  e.preventDefault();
+  contextData = { type, id };
+  const menu = document.getElementById('contextMenu');
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 170) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - 80) + 'px';
+  menu.classList.add('visible');
+}
+document.addEventListener('click', () => document.getElementById('contextMenu').classList.remove('visible'));
+
+function editContextItem() {
+  state.editingId = contextData.id;
+  if (contextData.type === 'todo') {
+    const t = state.todos.find(x => x.id === contextData.id);
+    if (!t) return;
+    document.getElementById('todoModalTitle').textContent = '✏️ 할일 수정';
+    document.getElementById('todoInput').value = t.text;
+    document.getElementById('todoListSelect').value = t.list;
+    document.getElementById('todoDueDate').value = t.dueDate;
+    document.getElementById('todoNote').value = t.note;
+    selectPriority(t.priority);
+    openModal('todoModal');
+  } else {
+    const r = state.routines.find(x => x.id === contextData.id);
+    if (!r) return;
+    document.getElementById('routineModalTitle').textContent = '🔄 루틴 수정';
+    document.getElementById('routineInput').value = r.name;
+    document.getElementById('routineTime').value = r.time || '';
+    document.querySelectorAll('#daySelect .day-option').forEach(d => {
+      d.classList.toggle('selected', r.days.includes(parseInt(d.dataset.day)));
+    });
+    document.querySelectorAll('#iconSelect .color-option').forEach(d => {
+      d.classList.toggle('selected', d.dataset.icon === r.icon);
+    });
+    document.querySelectorAll('#colorSelect .color-option').forEach(d => {
+      d.classList.toggle('selected', d.dataset.color === r.color);
+    });
+    openModal('routineModal');
+  }
+}
+
+function deleteContextItem() {
+  if (contextData.type === 'todo') {
+    state.todos = state.todos.filter(t => t.id !== contextData.id);
+    save(); renderTodoPanel();
+  } else {
+    state.routines = state.routines.filter(r => r.id !== contextData.id);
+    save(); renderRoutinePanel();
+  }
+}
+
+// ─── SEARCH (simple) ───
+function toggleSearch() {
+  const query = prompt('검색어를 입력하세요:');
+  if (!query) return;
+  const q = query.toLowerCase();
+  if (state.currentMainTab === 0) {
+    const results = state.todos.filter(t => t.text.toLowerCase().includes(q) || t.note.toLowerCase().includes(q));
+    alert(`검색 결과: ${results.length}개\n${results.map(t => '• ' + t.text).join('\n')}`);
+  } else {
+    const results = state.routines.filter(r => r.name.toLowerCase().includes(q));
+    alert(`검색 결과: ${results.length}개\n${results.map(r => '• ' + r.name).join('\n')}`);
+  }
+}
+
+// ─── INIT ───
+function init() {
+  renderSubTabs();
+  renderCurrentPanel();
+  setTimeout(() => {
+    const h = document.querySelector('.top-bar').offsetHeight;
+    document.getElementById('contentArea').style.marginTop = h + 'px';
+  }, 100);
+}
+
+init();
+</script>
+</body>
+</html>
