@@ -17,6 +17,13 @@
 }
 body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
 
+/* ═══ SYNC INDICATOR ═══ */
+.sync-indicator{position:fixed;top:8px;right:60px;z-index:999;font-size:11px;padding:3px 10px;border-radius:12px;font-weight:600;display:none;align-items:center;gap:4px;}
+.sync-indicator.saving{display:flex;background:#FFF3CD;color:#856404;}
+.sync-indicator.saved{display:flex;background:#D4EDDA;color:#155724;}
+.sync-indicator.error{display:flex;background:#F8D7DA;color:#721C24;}
+.sync-indicator.loading{display:flex;background:#CCE5FF;color:#004085;}
+
 /* ═══ TOP BAR ═══ */
 .top-bar{position:fixed;top:0;left:0;right:0;height:50px;background:var(--card);z-index:100;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;}
 .app-logo{font-size:18px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:6px;}
@@ -110,9 +117,6 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 .routine-stat-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;}
 
 /* ═══ TOOLS - ID/PW ═══ */
-.idpw-toolbar{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap;}
-.idpw-toolbar select,.idpw-toolbar input{padding:7px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:var(--bg);}
-.idpw-toolbar select:focus,.idpw-toolbar input:focus{border-color:var(--primary);background:#fff;}
 .idpw-table-wrap{background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto;}
 .idpw-table{width:100%;border-collapse:collapse;font-size:13px;}
 .idpw-table thead th{padding:10px 14px;font-weight:600;font-size:12px;color:var(--text-light);border-bottom:2px solid var(--border);text-align:left;white-space:nowrap;}
@@ -209,12 +213,11 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 .context-item:hover{background:var(--bg);}
 .context-item.danger{color:var(--danger);}
 @keyframes slideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.todo-item,.routine-item,.skin-record-card,.points-card{animation:slideIn 0.25s ease;}
+.todo-item,.skin-record-card,.points-card{animation:slideIn 0.25s ease;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
-/* ═══ MOBILE ═══ */
 @media(max-width:768px){
   .hamburger{display:flex;}
   .sidebar{position:fixed;top:50px;left:0;bottom:0;width:100%;min-width:100%;z-index:50;transition:transform 0.3s;}
@@ -235,6 +238,9 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 </head>
 <body>
 
+<!-- SYNC INDICATOR -->
+<div class="sync-indicator" id="syncIndicator"></div>
+
 <div class="top-bar">
   <div style="display:flex;align-items:center;gap:8px;">
     <button class="hamburger" onclick="toggleMobileSidebar()">
@@ -247,6 +253,7 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
   </div>
   <div class="header-actions">
     <button class="header-btn" onclick="toggleSearch()" title="검색">🔍</button>
+    <button class="header-btn" onclick="manualSync()" title="동기화">🔄</button>
   </div>
 </div>
 
@@ -382,14 +389,12 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
   </div>
 </div>
 
-<!-- ADD CATEGORY MODAL -->
+<!-- CATEGORY MODAL -->
 <div class="modal-overlay" id="catModal">
   <div class="modal">
     <div class="modal-title">📁 카테고리 추가</div>
     <div class="form-group"><label class="form-label">이름</label><input class="form-input" id="newCatName" placeholder="카테고리 이름" maxlength="20"></div>
-    <div class="form-group"><label class="form-label">아이콘</label>
-      <div class="color-select" id="catEmojiRow"></div>
-    </div>
+    <div class="form-group"><label class="form-label">아이콘</label><div class="color-select" id="catEmojiRow"></div></div>
     <button class="btn-submit" onclick="saveNewCategory()">추가</button>
   </div>
 </div>
@@ -399,6 +404,113 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
   <div class="context-item danger" onclick="deleteContextItem()">🗑️ 삭제</div>
 </div>
 
+<!-- ═══ FIREBASE SDK (modular CDN) ═══ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAOrr-nI2kxze9gvUrbFuejHfP9ctYQme4",
+  authDomain: "routodo-d0c30.firebaseapp.com",
+  projectId: "routodo-d0c30",
+  storageBucket: "routodo-d0c30.firebasestorage.app",
+  messagingSenderId: "695109558401",
+  appId: "1:695109558401:web:577ad52ec9754f802ced80"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DOC_REF = doc(db, "appdata", "main");
+
+/* ═══ SYNC INDICATOR ═══ */
+function showSync(type, msg) {
+  const el = document.getElementById('syncIndicator');
+  el.className = 'sync-indicator ' + type;
+  el.textContent = msg;
+  if (type === 'saved') setTimeout(() => { el.style.display = 'none'; }, 2000);
+}
+
+/* ═══ SAVE TO FIRESTORE (debounced) ═══ */
+let saveTimer = null;
+let skipNextSnapshot = false;
+
+function saveToCloud() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      showSync('saving', '⏳ 저장 중...');
+      skipNextSnapshot = true;
+      await setDoc(DOC_REF, {
+        categories: S.categories,
+        todos: S.todos,
+        routines: S.routines,
+        routineChecks: S.routineChecks,
+        idpw: S.idpw,
+        skinRecords: S.skinRecords,
+        skinPoints: S.skinPoints,
+        updatedAt: Date.now()
+      });
+      showSync('saved', '✅ 저장됨');
+    } catch (e) {
+      console.error('Firestore save error:', e);
+      showSync('error', '❌ 저장 실패');
+      skipNextSnapshot = false;
+    }
+  }, 800);
+}
+
+/* ═══ LOAD FROM FIRESTORE ═══ */
+async function loadFromCloud() {
+  try {
+    showSync('loading', '📡 불러오는 중...');
+    const snap = await getDoc(DOC_REF);
+    if (snap.exists()) {
+      applyCloudData(snap.data());
+      showSync('saved', '✅ 동기화 완료');
+    } else {
+      showSync('saved', '✅ 새 시작');
+      saveToCloud();
+    }
+  } catch (e) {
+    console.error('Firestore load error:', e);
+    showSync('error', '❌ 불러오기 실패 (오프라인 모드)');
+  }
+}
+
+function applyCloudData(data) {
+  if (data.categories) S.categories = data.categories;
+  if (data.todos) S.todos = data.todos;
+  if (data.routines) S.routines = data.routines;
+  if (data.routineChecks) S.routineChecks = data.routineChecks;
+  if (data.idpw) S.idpw = data.idpw;
+  if (data.skinRecords) S.skinRecords = data.skinRecords;
+  if (data.skinPoints) S.skinPoints = data.skinPoints;
+  // Also update localStorage as offline fallback
+  saveLocal();
+  renderSidebar();
+  renderContent();
+}
+
+/* ═══ REALTIME LISTENER (auto-sync from other devices) ═══ */
+onSnapshot(DOC_REF, (snap) => {
+  if (skipNextSnapshot) { skipNextSnapshot = false; return; }
+  if (snap.exists()) {
+    const data = snap.data();
+    applyCloudData(data);
+    showSync('saved', '🔄 다른 기기에서 업데이트됨');
+  }
+}, (err) => {
+  console.error('Snapshot listener error:', err);
+});
+
+/* ═══ Expose to global ═══ */
+window.saveToCloud = saveToCloud;
+window.loadFromCloud = loadFromCloud;
+
+/* ═══ INIT: Load from cloud first ═══ */
+loadFromCloud();
+</script>
+
 <script>
 /* ═══ STATE ═══ */
 const DEFAULT_CATS=[
@@ -406,49 +518,51 @@ const DEFAULT_CATS=[
   {id:'personal',icon:'👤',label:'개인'},{id:'work',icon:'💼',label:'업무'},{id:'study',icon:'📚',label:'공부'},
   {id:'completed',icon:'✅',label:'완료',fixed:true}
 ];
-let S={
-  activeSection:'todo',activeSub:'all',
-  categories:JSON.parse(localStorage.getItem('rt_cats')||'null')||DEFAULT_CATS.map(c=>({...c})),
-  todos:JSON.parse(localStorage.getItem('rt_todos')||'[]'),
-  routines:JSON.parse(localStorage.getItem('rt_routines')||'[]'),
-  routineChecks:JSON.parse(localStorage.getItem('rt_checks')||'{}'),
-  idpw:JSON.parse(localStorage.getItem('rt_idpw')||'[]'),
-  skinRecords:JSON.parse(localStorage.getItem('rt_skin')||'[]'),
-  skinPoints:JSON.parse(localStorage.getItem('rt_points')||'[]'),
-  skinMonth:new Date().getMonth(),skinYear:new Date().getFullYear(),
-  editingId:null,contextType:null,contextId:null,
+let S = {
+  activeSection:'todo', activeSub:'all',
+  categories: JSON.parse(localStorage.getItem('rt_cats')||'null') || DEFAULT_CATS.map(c=>({...c})),
+  todos: JSON.parse(localStorage.getItem('rt_todos')||'[]'),
+  routines: JSON.parse(localStorage.getItem('rt_routines')||'[]'),
+  routineChecks: JSON.parse(localStorage.getItem('rt_checks')||'{}'),
+  idpw: JSON.parse(localStorage.getItem('rt_idpw')||'[]'),
+  skinRecords: JSON.parse(localStorage.getItem('rt_skin')||'[]'),
+  skinPoints: JSON.parse(localStorage.getItem('rt_points')||'[]'),
+  skinMonth:new Date().getMonth(), skinYear:new Date().getFullYear(),
+  editingId:null, contextType:null, contextId:null,
 };
-
-// Samples
-if(!S.todos.length) S.todos=[
-  {id:'d1',text:'프로젝트 기획서 작성',list:'work',dueDate:todayStr(),note:'3페이지',priority:'high',completed:false,createdAt:Date.now(),noti:false,notiDate:'',notiTime:''},
-  {id:'d2',text:'알고리즘 문제 3개',list:'study',dueDate:todayStr(),note:'',priority:'medium',completed:false,createdAt:Date.now(),noti:false,notiDate:'',notiTime:''},
-  {id:'d3',text:'장보기',list:'personal',dueDate:'',note:'',priority:'low',completed:false,createdAt:Date.now(),noti:false,notiDate:'',notiTime:''},
-  {id:'d4',text:'이메일 회신',list:'work',dueDate:todayStr(),note:'',priority:'high',completed:true,createdAt:Date.now(),noti:false,notiDate:'',notiTime:''},
-];
-if(!S.routines.length){
-  S.routines=[
-    {id:'r1',name:'아침 운동',icon:'💪',color:'#4A6CF7',days:[1,2,3,4,5],time:'07:00',createdAt:Date.now()-86400000*30},
-    {id:'r2',name:'독서 30분',icon:'📖',color:'#34C759',days:[0,1,2,3,4,5,6],time:'22:00',createdAt:Date.now()-86400000*20},
-    {id:'r3',name:'물 2L 마시기',icon:'💧',color:'#5AC8FA',days:[0,1,2,3,4,5,6],time:'',createdAt:Date.now()-86400000*15},
-    {id:'r4',name:'명상 10분',icon:'🧘',color:'#AF52DE',days:[1,3,5],time:'06:30',createdAt:Date.now()-86400000*10},
-  ];
-  const now=new Date();
-  for(let i=1;i<=14;i++){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);const k=dStr(d);S.routineChecks[k]={};S.routines.forEach(r=>{if(r.days.includes(d.getDay())&&Math.random()>0.3)S.routineChecks[k][r.id]=true;});}
-}
 
 /* ═══ HELPERS ═══ */
 function uid(){return 'id_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);}
 function todayStr(){return dStr(new Date());}
 function dStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function save(){['todos','routines','routineChecks','categories','idpw','skinRecords','skinPoints'].forEach(k=>{const key=k==='categories'?'rt_cats':k==='routineChecks'?'rt_checks':k==='skinRecords'?'rt_skin':k==='skinPoints'?'rt_points':k==='idpw'?'rt_idpw':'rt_'+k;localStorage.setItem(key,JSON.stringify(S[k]));});}
 function dayN(n){return['일','월','화','수','목','금','토'][n];}
 function fmtDate(s){if(!s)return'';const d=new Date(s+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);const diff=(d-t)/864e5;if(diff===0)return'오늘';if(diff===1)return'내일';if(diff===-1)return'어제';return(d.getMonth()+1)+'/'+d.getDate();}
 function isMobile(){return innerWidth<=768;}
 function catById(id){return S.categories.find(c=>c.id===id);}
 function catCount(id){if(id==='all')return S.todos.filter(t=>!t.completed).length;if(id==='important')return S.todos.filter(t=>t.priority==='high'&&!t.completed).length;if(id==='completed')return S.todos.filter(t=>t.completed).length;return S.todos.filter(t=>t.list===id&&!t.completed).length;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function emptyHTML(icon,title,desc){return`<div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-desc">${desc}</div></div>`;}
 
-/* ═══ GET 2-WEEK DATE ARRAY (Mon~Sun x2) ═══ */
+/* ═══ SAVE: localStorage (offline) + Firestore (cloud) ═══ */
+function saveLocal(){
+  localStorage.setItem('rt_cats',JSON.stringify(S.categories));
+  localStorage.setItem('rt_todos',JSON.stringify(S.todos));
+  localStorage.setItem('rt_routines',JSON.stringify(S.routines));
+  localStorage.setItem('rt_checks',JSON.stringify(S.routineChecks));
+  localStorage.setItem('rt_idpw',JSON.stringify(S.idpw));
+  localStorage.setItem('rt_skin',JSON.stringify(S.skinRecords));
+  localStorage.setItem('rt_points',JSON.stringify(S.skinPoints));
+}
+function save(){
+  saveLocal();
+  if(window.saveToCloud) window.saveToCloud();
+}
+
+function manualSync(){
+  if(window.loadFromCloud) window.loadFromCloud();
+}
+
+/* ═══ 2-WEEK DATES ═══ */
 function get2Weeks(){
   const today=new Date();today.setHours(0,0,0,0);
   const dow=today.getDay();
@@ -466,56 +580,34 @@ const SECTIONS=[
   {id:'tools',icon:'🛠️',label:'Tools'},
   {id:'calendar',icon:'📅',label:'Calendar'},
 ];
-const TOOL_SUBS=[{id:'idpw',icon:'🔑',label:'ID/PW'}];
-const CAL_SUBS=[{id:'skin',icon:'🏥',label:'피부과 기록'}];
-
 function renderSidebar(){
-  const sb=document.getElementById('sidebar');
-  let h='';
+  const sb=document.getElementById('sidebar');let h='';
   SECTIONS.forEach(sec=>{
     const isActive=S.activeSection===sec.id;
-    h+=`<div class="nav-section">
-      <div class="nav-section-header ${isActive?'active':''}" onclick="toggleSection('${sec.id}')">
-        <span class="icon">${sec.icon}</span><span>${sec.label}</span><span class="arrow">▶</span>
-      </div>
-      <div class="nav-sub ${isActive?'open':''}" id="sub_${sec.id}">`;
+    h+=`<div class="nav-section"><div class="nav-section-header ${isActive?'active':''}" onclick="toggleSection('${sec.id}')"><span class="icon">${sec.icon}</span><span>${sec.label}</span><span class="arrow">▶</span></div><div class="nav-sub ${isActive?'open':''}" id="sub_${sec.id}">`;
     if(sec.id==='todo'){
-      S.categories.forEach(c=>{
-        h+=`<div class="nav-sub-item ${S.activeSection==='todo'&&S.activeSub===c.id?'active':''}" onclick="selectSub('todo','${c.id}')">
-          <span class="sub-icon">${c.icon}</span><span>${c.label}</span>
-          <span class="sub-count">${catCount(c.id)}</span></div>`;
-      });
+      S.categories.forEach(c=>{h+=`<div class="nav-sub-item ${S.activeSection==='todo'&&S.activeSub===c.id?'active':''}" onclick="selectSub('todo','${c.id}')"><span class="sub-icon">${c.icon}</span><span>${c.label}</span><span class="sub-count">${catCount(c.id)}</span></div>`;});
       h+=`<div class="nav-add-row" onclick="openCatModal()">+ 카테고리 추가</div>`;
     } else if(sec.id==='routine'){
       h+=`<div class="nav-sub-item ${S.activeSection==='routine'&&S.activeSub==='list'?'active':''}" onclick="selectSub('routine','list')"><span class="sub-icon">📋</span><span>루틴 목록</span></div>`;
       h+=`<div class="nav-sub-item ${S.activeSection==='routine'&&S.activeSub==='stats'?'active':''}" onclick="selectSub('routine','stats')"><span class="sub-icon">🏆</span><span>통계</span></div>`;
     } else if(sec.id==='tools'){
-      TOOL_SUBS.forEach(ts=>{
-        h+=`<div class="nav-sub-item ${S.activeSection==='tools'&&S.activeSub===ts.id?'active':''}" onclick="selectSub('tools','${ts.id}')"><span class="sub-icon">${ts.icon}</span><span>${ts.label}</span></div>`;
-      });
+      h+=`<div class="nav-sub-item ${S.activeSection==='tools'&&S.activeSub==='idpw'?'active':''}" onclick="selectSub('tools','idpw')"><span class="sub-icon">🔑</span><span>ID/PW</span></div>`;
     } else if(sec.id==='calendar'){
-      CAL_SUBS.forEach(cs=>{
-        h+=`<div class="nav-sub-item ${S.activeSection==='calendar'&&S.activeSub===cs.id?'active':''}" onclick="selectSub('calendar','${cs.id}')"><span class="sub-icon">${cs.icon}</span><span>${cs.label}</span></div>`;
-      });
+      h+=`<div class="nav-sub-item ${S.activeSection==='calendar'&&S.activeSub==='skin'?'active':''}" onclick="selectSub('calendar','skin')"><span class="sub-icon">🏥</span><span>피부과 기록</span></div>`;
     }
     h+=`</div></div>`;
   });
   sb.innerHTML=h;
 }
-
 function toggleSection(id){
-  if(S.activeSection===id){/* keep open, just re-render */}
-  else{S.activeSection=id;
-    if(id==='todo')S.activeSub='all';
-    else if(id==='routine')S.activeSub='list';
-    else if(id==='tools')S.activeSub='idpw';
-    else if(id==='calendar')S.activeSub='skin';
+  if(S.activeSection!==id){S.activeSection=id;
+    if(id==='todo')S.activeSub='all';else if(id==='routine')S.activeSub='list';else if(id==='tools')S.activeSub='idpw';else if(id==='calendar')S.activeSub='skin';
   }
   renderSidebar();renderContent();
 }
 function selectSub(sec,sub){
-  S.activeSection=sec;S.activeSub=sub;
-  renderSidebar();renderContent();
+  S.activeSection=sec;S.activeSub=sub;renderSidebar();renderContent();
   if(isMobile()){document.getElementById('sidebar').classList.add('hidden');document.getElementById('mainContent').classList.add('visible');}
 }
 
@@ -525,13 +617,9 @@ function mobileGoBack(){document.getElementById('sidebar').classList.remove('hid
 
 /* ═══ CONTENT ROUTER ═══ */
 function renderContent(){
-  const s=S.activeSection,sub=S.activeSub;
-  const fab=document.getElementById('fabBtn');
-  fab.style.display='flex';
-  if(s==='todo') renderTodo();
-  else if(s==='routine'){if(sub==='list')renderRoutineTable();else renderRoutineStats(); }
-  else if(s==='tools') renderIdpw();
-  else if(s==='calendar') renderSkin();
+  document.getElementById('fabBtn').style.display='flex';
+  if(S.activeSection==='todo')renderTodo();else if(S.activeSection==='routine'){if(S.activeSub==='list')renderRoutineTable();else renderRoutineStats();}
+  else if(S.activeSection==='tools')renderIdpw();else if(S.activeSection==='calendar')renderSkin();
 }
 
 /* ═══ TODO ═══ */
@@ -545,12 +633,8 @@ function renderTodo(){
   const active=todos.filter(t=>!t.completed),done=todos.filter(t=>t.completed);
   document.getElementById('contentSubtitle').textContent=S.activeSub==='completed'?done.length+'개 완료':active.length+'개 할 일';
   let h='';
-  if(S.activeSub!=='completed'&&active.length){
-    h+=`<div class="todo-section"><div class="section-header"><span class="section-title">할 일</span><span class="section-count">${active.length}</span></div><div class="todo-list">${active.map(todoHTML).join('')}</div></div>`;
-  }
-  if(done.length&&(S.activeSub==='completed'||S.activeSub==='all')){
-    h+=`<div class="todo-section"><div class="section-header"><span class="section-title">완료됨</span><span class="section-count">${done.length}</span></div><div class="todo-list">${done.map(todoHTML).join('')}</div></div>`;
-  }
+  if(S.activeSub!=='completed'&&active.length) h+=`<div class="todo-section"><div class="section-header"><span class="section-title">할 일</span><span class="section-count">${active.length}</span></div><div class="todo-list">${active.map(todoHTML).join('')}</div></div>`;
+  if(done.length&&(S.activeSub==='completed'||S.activeSub==='all')) h+=`<div class="todo-section"><div class="section-header"><span class="section-title">완료됨</span><span class="section-count">${done.length}</span></div><div class="todo-list">${done.map(todoHTML).join('')}</div></div>`;
   if(!todos.length) h=emptyHTML('📝','할일이 없습니다','+ 버튼으로 추가하세요');
   document.getElementById('contentBody').innerHTML=h;
 }
@@ -559,76 +643,41 @@ function todoHTML(t){
   const tc=t.priority==='high'?'tag-urgent':t.priority==='medium'?'tag-normal':'tag-low';
   const tt=t.priority==='high'?'긴급':t.priority==='medium'?'보통':'여유';
   const c=catById(t.list);const cl=c?c.icon+' '+c.label:t.list;
-  return`<div class="todo-item ${t.completed?'completed':''}" oncontextmenu="showCtx(event,'todo','${t.id}')">
-    <div class="todo-priority-bar ${pc}"></div>
-    <div class="todo-checkbox ${t.completed?'checked':''}" onclick="toggleTodo('${t.id}')"></div>
-    <div class="todo-info" onclick="toggleTodo('${t.id}')">
-      <div class="todo-text">${t.text}</div>
-      <div class="todo-meta">${t.dueDate?'<span>📅 '+fmtDate(t.dueDate)+'</span>':''}<span>${cl}</span><span class="todo-tag ${tc}">${tt}</span>${t.noti?'<span style="color:var(--warning)">🔔</span>':''}</div>
-    </div>
-    <div class="todo-actions"><button class="todo-action-btn" onclick="editTodo('${t.id}')">✏️</button><button class="todo-action-btn danger" onclick="deleteTodo('${t.id}')">✕</button></div>
-  </div>`;
+  return`<div class="todo-item ${t.completed?'completed':''}"><div class="todo-priority-bar ${pc}"></div><div class="todo-checkbox ${t.completed?'checked':''}" onclick="toggleTodo('${t.id}')"></div><div class="todo-info" onclick="toggleTodo('${t.id}')"><div class="todo-text">${escHtml(t.text)}</div><div class="todo-meta">${t.dueDate?'<span>📅 '+fmtDate(t.dueDate)+'</span>':''}<span>${cl}</span><span class="todo-tag ${tc}">${tt}</span>${t.noti?'<span style="color:var(--warning)">🔔</span>':''}</div></div><div class="todo-actions"><button class="todo-action-btn" onclick="editTodo('${t.id}')">✏️</button><button class="todo-action-btn danger" onclick="deleteTodo('${t.id}')">✕</button></div></div>`;
 }
 function toggleTodo(id){const t=S.todos.find(x=>x.id===id);if(t){t.completed=!t.completed;save();renderTodo();renderSidebar();}}
 function deleteTodo(id){S.todos=S.todos.filter(x=>x.id!==id);save();renderTodo();renderSidebar();}
 
-/* ═══ ROUTINE TABLE (2-week) ═══ */
+/* ═══ ROUTINE TABLE ═══ */
 function renderRoutineTable(){
   document.getElementById('contentTitle').textContent='📋 루틴 목록';
   document.getElementById('contentSubtitle').textContent='전주 + 이번주 (월~일)';
-  const dates=get2Weeks();
-  const todayS=todayStr();
+  const dates=get2Weeks();const todayS=todayStr();
   let h=`<div class="routine-table-wrap"><table class="routine-table"><thead><tr><th class="routine-name-col">루틴</th>`;
-  // Week headers
   h+=`<th class="week-label" colspan="7">전주 (${(dates[0].getMonth()+1)+'/'+dates[0].getDate()}~${(dates[6].getMonth()+1)+'/'+dates[6].getDate()})</th>`;
   h+=`<th class="week-label" colspan="7">이번주 (${(dates[7].getMonth()+1)+'/'+dates[7].getDate()}~${(dates[13].getMonth()+1)+'/'+dates[13].getDate()})</th>`;
   h+=`<th class="stat-col">달성</th></tr><tr><th class="routine-name-col"></th>`;
-  dates.forEach(d=>{
-    const ds=dStr(d);const isToday=ds===todayS;
-    h+=`<th style="${isToday?'color:var(--primary);font-weight:700;':''}">${dayN((d.getDay()||7)===7?0:d.getDay())}<br><span style="font-size:9px;font-weight:400;color:var(--text-light)">${d.getDate()}</span></th>`;
-  });
+  dates.forEach(d=>{const ds=dStr(d);const isT=ds===todayS;h+=`<th style="${isT?'color:var(--primary);font-weight:700;':''}">${dayN((d.getDay()||7)===7?0:d.getDay())}<br><span style="font-size:9px;font-weight:400;color:var(--text-light)">${d.getDate()}</span></th>`;});
   h+=`<th class="stat-col">횟수 / %</th></tr></thead><tbody>`;
-
   S.routines.forEach(r=>{
-    h+=`<tr><td class="routine-name-cell"><div class="routine-name-inner" oncontextmenu="showCtx(event,'routine','${r.id}')" onclick="openRoutineModal('${r.id}')">
-      <div class="r-icon" style="background:${r.color}20;color:${r.color}">${r.icon}</div>
-      <div><div class="r-name">${r.name}</div><div class="r-detail">${r.time?r.time+' · ':''}${r.days.map(dayN).join(', ')}</div></div>
-    </div></td>`;
+    h+=`<tr><td class="routine-name-cell"><div class="routine-name-inner" onclick="openRoutineModal('${r.id}')"><div class="r-icon" style="background:${r.color}20;color:${r.color}">${r.icon}</div><div><div class="r-name">${escHtml(r.name)}</div><div class="r-detail">${r.time?r.time+' · ':''}${r.days.map(dayN).join(', ')}</div></div></div></td>`;
     let doneC=0,totalC=0;
-    dates.forEach(d=>{
-      const ds=dStr(d);const checks=S.routineChecks[ds]||{};
-      const isToday=ds===todayS;
-      const shouldDo=r.days.includes(d.getDay());
-      const done=!!checks[r.id];
-      if(shouldDo){totalC++;if(done)doneC++;}
-      if(shouldDo){
-        h+=`<td><div class="r-check-cell ${done?'checked':''} ${isToday?'today-cell':''}" onclick="toggleRC('${r.id}','${ds}')">${done?'✓':''}</div></td>`;
-      } else {
-        h+=`<td><div class="r-check-cell na">-</div></td>`;
-      }
-    });
-    const pct=totalC?Math.round(doneC/totalC*100):0;
-    const color=pct>=70?'var(--success)':pct>=40?'var(--warning)':'var(--danger)';
+    dates.forEach(d=>{const ds=dStr(d);const checks=S.routineChecks[ds]||{};const isT=ds===todayS;const shouldDo=r.days.includes(d.getDay());const done=!!checks[r.id];if(shouldDo){totalC++;if(done)doneC++;}
+    if(shouldDo){h+=`<td><div class="r-check-cell ${done?'checked':''} ${isT?'today-cell':''}" onclick="toggleRC('${r.id}','${ds}')">${done?'✓':''}</div></td>`;}else{h+=`<td><div class="r-check-cell na">-</div></td>`;}});
+    const pct=totalC?Math.round(doneC/totalC*100):0;const color=pct>=70?'var(--success)':pct>=40?'var(--warning)':'var(--danger)';
     h+=`<td class="stat-cell"><div class="routine-stat-badge" style="background:${color}15;color:${color}">${doneC}/${totalC} · ${pct}%</div></td></tr>`;
   });
-
   if(!S.routines.length) h+=`<tr><td colspan="16" style="padding:40px;text-align:center;color:var(--text-light)">루틴을 추가해주세요</td></tr>`;
   h+=`</tbody></table></div>`;
   document.getElementById('contentBody').innerHTML=h;
 }
-function toggleRC(rid,ds){
-  if(!S.routineChecks[ds])S.routineChecks[ds]={};
-  S.routineChecks[ds][rid]=!S.routineChecks[ds][rid];
-  if(!S.routineChecks[ds][rid])delete S.routineChecks[ds][rid];
-  save();renderRoutineTable();
-}
+function toggleRC(rid,ds){if(!S.routineChecks[ds])S.routineChecks[ds]={};S.routineChecks[ds][rid]=!S.routineChecks[ds][rid];if(!S.routineChecks[ds][rid])delete S.routineChecks[ds][rid];save();renderRoutineTable();}
 
 /* ═══ ROUTINE STATS ═══ */
 function renderRoutineStats(){
   document.getElementById('contentTitle').textContent='🏆 통계';
   document.getElementById('contentSubtitle').textContent='최근 2주 달성 현황';
-  const dates=get2Weeks();
-  let total=0,done=0;
+  const dates=get2Weeks();let total=0,done=0;
   S.routines.forEach(r=>{dates.forEach(d=>{if(r.days.includes(d.getDay())){total++;const c=S.routineChecks[dStr(d)]||{};if(c[r.id])done++;}});});
   const avgP=total?Math.round(done/total*100):0;
   let best=0,bestN='';
@@ -638,137 +687,62 @@ function renderRoutineStats(){
     <div style="background:var(--card);border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:22px;font-weight:700;color:var(--success)">${avgP}%</div><div style="font-size:10px;color:var(--text-light)">2주 달성률</div></div>
     <div style="background:var(--card);border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:22px;font-weight:700;color:var(--orange)">${best}</div><div style="font-size:10px;color:var(--text-light)">최장 연속</div></div>
   </div>`;
-  if(bestN)h+=`<div style="background:var(--card);border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px"><div style="font-size:12px;color:var(--text-light);font-weight:600">🏆 최장 연속 루틴</div><div style="font-size:15px;font-weight:700;margin-top:4px">${bestN} · ${best}일</div></div>`;
-  S.routines.forEach(r=>{
-    let d2=0,p2=0;dates.forEach(d=>{if(r.days.includes(d.getDay())){p2++;const c=S.routineChecks[dStr(d)]||{};if(c[r.id])d2++;}});
-    const rate=p2?Math.round(d2/p2*100):0;
-    h+=`<div style="background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:8px;background:${r.color}20;color:${r.color};display:flex;align-items:center;justify-content:center;font-size:15px">${r.icon}</div><div><div style="font-size:13px;font-weight:600">${r.name}</div><div style="font-size:10px;color:var(--text-light)">2주: ${d2}/${p2}</div></div></div>
-      <div class="routine-stat-badge" style="background:${rate>=70?'#E5FFE8':'#FFE5E5'};color:${rate>=70?'var(--success)':'var(--danger)'}">${rate}%</div>
-    </div>`;
+  if(bestN) h+=`<div style="background:var(--card);border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px"><div style="font-size:12px;color:var(--text-light);font-weight:600">🏆 최장 연속 루틴</div><div style="font-size:15px;font-weight:700;margin-top:4px">${escHtml(bestN)} · ${best}일</div></div>`;
+  S.routines.forEach(r=>{let d2=0,p2=0;dates.forEach(d=>{if(r.days.includes(d.getDay())){p2++;const c=S.routineChecks[dStr(d)]||{};if(c[r.id])d2++;}});const rate=p2?Math.round(d2/p2*100):0;
+    h+=`<div style="background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:8px;background:${r.color}20;color:${r.color};display:flex;align-items:center;justify-content:center;font-size:15px">${r.icon}</div><div><div style="font-size:13px;font-weight:600">${escHtml(r.name)}</div><div style="font-size:10px;color:var(--text-light)">2주: ${d2}/${p2}</div></div></div><div class="routine-stat-badge" style="background:${rate>=70?'#E5FFE8':'#FFE5E5'};color:${rate>=70?'var(--success)':'var(--danger)'}">${rate}%</div></div>`;
   });
   document.getElementById('contentBody').innerHTML=h;
 }
 
-/* ═══ TOOLS - ID/PW ═══ */
+/* ═══ ID/PW ═══ */
 function renderIdpw(){
   document.getElementById('contentTitle').textContent='🔑 ID/PW 관리';
   document.getElementById('contentSubtitle').textContent=S.idpw.length+'개 계정';
   let h=`<div class="idpw-table-wrap"><table class="idpw-table"><thead><tr><th>사용자</th><th>사이트</th><th>ID</th><th>PW</th><th>메모</th><th></th></tr></thead><tbody>`;
   if(!S.idpw.length) h+=`<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-light)">+ 버튼으로 계정을 추가하세요</td></tr>`;
-  S.idpw.forEach(item=>{
-    const oc=item.owner==='다인'?'owner-dain':'owner-dahun';
-    h+=`<tr>
-      <td><span class="owner-badge ${oc}">${item.owner}</span></td>
-      <td style="font-weight:600">${item.site}</td>
-      <td style="font-family:monospace">${item.uid}</td>
-      <td><div class="pw-cell">
-        <span class="pw-mask" id="pw_${item.id}">${'•'.repeat(item.pw.length)}</span>
-        <button class="pw-toggle" onclick="togglePw('${item.id}','${escHtml(item.pw)}')">👁</button>
-        <button class="pw-copy" onclick="copyPw('${escHtml(item.pw)}')">📋</button>
-      </div></td>
-      <td style="font-size:11px;color:var(--text-light)">${item.memo||''}</td>
-      <td><div class="idpw-actions">
-        <button class="idpw-action-btn" onclick="editIdpw('${item.id}')">✏️</button>
-        <button class="idpw-action-btn danger" onclick="deleteIdpw('${item.id}')">✕</button>
-      </div></td>
-    </tr>`;
+  S.idpw.forEach(item=>{const oc=item.owner==='다인'?'owner-dain':'owner-dahun';
+    h+=`<tr><td><span class="owner-badge ${oc}">${escHtml(item.owner)}</span></td><td style="font-weight:600">${escHtml(item.site)}</td><td style="font-family:monospace">${escHtml(item.uid)}</td><td><div class="pw-cell"><span class="pw-mask" id="pw_${item.id}">${'•'.repeat(item.pw.length)}</span><button class="pw-toggle" onclick="togglePw('${item.id}')">👁</button><button class="pw-copy" onclick="copyPw('${item.id}')">📋</button></div></td><td style="font-size:11px;color:var(--text-light)">${escHtml(item.memo||'')}</td><td><div class="idpw-actions"><button class="idpw-action-btn" onclick="editIdpw('${item.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteIdpw('${item.id}')">✕</button></div></td></tr>`;
   });
   h+=`</tbody></table></div>`;
   document.getElementById('contentBody').innerHTML=h;
 }
-function escHtml(s){return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function togglePw(id,pw){const el=document.getElementById('pw_'+id);if(el.dataset.show==='1'){el.textContent='•'.repeat(pw.length);el.dataset.show='0';}else{el.textContent=pw;el.dataset.show='1';}}
-function copyPw(pw){navigator.clipboard.writeText(pw).then(()=>alert('복사됨!')).catch(()=>{});}
+function togglePw(id){const item=S.idpw.find(x=>x.id===id);if(!item)return;const el=document.getElementById('pw_'+id);if(el.dataset.show==='1'){el.textContent='•'.repeat(item.pw.length);el.dataset.show='0';}else{el.textContent=item.pw;el.dataset.show='1';}}
+function copyPw(id){const item=S.idpw.find(x=>x.id===id);if(!item)return;navigator.clipboard.writeText(item.pw).then(()=>{const el=document.getElementById('pw_'+id);el.textContent='✅ 복사됨!';setTimeout(()=>{el.textContent='•'.repeat(item.pw.length);el.dataset.show='0';},1200);}).catch(()=>{});}
 function deleteIdpw(id){if(!confirm('삭제하시겠습니까?'))return;S.idpw=S.idpw.filter(x=>x.id!==id);save();renderIdpw();}
 
 /* ═══ CALENDAR - 피부과 ═══ */
 function renderSkin(){
   document.getElementById('contentTitle').textContent='🏥 피부과 기록';
   document.getElementById('contentSubtitle').textContent='';
-  const y=S.skinYear,m=S.skinMonth;
-  const firstDay=new Date(y,m,1).getDay(),lastDate=new Date(y,m+1,0).getDate(),prevLast=new Date(y,m,0).getDate();
-  const todayS=todayStr();
-  const mn=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-
-  // Group records by date
+  const y=S.skinYear,m=S.skinMonth;const firstDay=new Date(y,m,1).getDay(),lastDate=new Date(y,m+1,0).getDate(),prevLast=new Date(y,m,0).getDate();const todayS=todayStr();const mn=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   const byDate={};S.skinRecords.forEach(r=>{if(!byDate[r.date])byDate[r.date]=[];byDate[r.date].push(r);});
-
-  let h=`<div class="skin-month-nav">
-    <button onclick="navSkinMonth(-1)">◀</button>
-    <div class="month-title">${y}년 ${mn[m]}</div>
-    <button onclick="navSkinMonth(1)">▶</button>
-  </div>`;
-
-  h+=`<div class="skin-cal"><div class="skin-cal-weekdays">`;
-  ['일','월','화','수','목','금','토'].forEach(d=>h+=`<div class="skin-cal-weekday">${d}</div>`);
+  let h=`<div class="skin-month-nav"><button onclick="navSkinMonth(-1)">◀</button><div class="month-title">${y}년 ${mn[m]}</div><button onclick="navSkinMonth(1)">▶</button></div>`;
+  h+=`<div class="skin-cal"><div class="skin-cal-weekdays">`;['일','월','화','수','목','금','토'].forEach(d=>h+=`<div class="skin-cal-weekday">${d}</div>`);
   h+=`</div><div class="skin-cal-days">`;
-  for(let i=0;i<firstDay;i++){const d=prevLast-firstDay+i+1;h+=`<div class="skin-cal-day other"><div class="day-num">${d}</div></div>`;}
-  for(let d=1;d<=lastDate;d++){
-    const ds=dStr(new Date(y,m,d));const isToday=ds===todayS;
-    const recs=byDate[ds]||[];
-    h+=`<div class="skin-cal-day ${isToday?'today':''}" onclick="openSkinModal(null,'${ds}')">
-      <div class="day-num">${d}</div>`;
-    recs.forEach(r=>h+=`<div class="skin-dot">${r.clinic.substr(0,4)}</div>`);
-    h+=`</div>`;
-  }
-  const rem=42-(firstDay+lastDate);
-  for(let i=1;i<=rem&&(firstDay+lastDate+i-1)<42;i++)h+=`<div class="skin-cal-day other"><div class="day-num">${i}</div></div>`;
+  for(let i=0;i<firstDay;i++) h+=`<div class="skin-cal-day other"><div class="day-num">${prevLast-firstDay+i+1}</div></div>`;
+  for(let d=1;d<=lastDate;d++){const ds=dStr(new Date(y,m,d));const isT=ds===todayS;const recs=byDate[ds]||[];
+    h+=`<div class="skin-cal-day ${isT?'today':''}" onclick="openSkinModal(null,'${ds}')"><div class="day-num">${d}</div>`;recs.forEach(r=>h+=`<div class="skin-dot">${escHtml(r.clinic.substr(0,4))}</div>`);h+=`</div>`;}
+  const rem=42-(firstDay+lastDate);for(let i=1;i<=rem&&i<=7;i++) h+=`<div class="skin-cal-day other"><div class="day-num">${i}</div></div>`;
   h+=`</div></div>`;
 
-  // 관리별 경과일수
-  const treatments={};
-  S.skinRecords.forEach(r=>{
-    const key=r.treatment;
-    if(!treatments[key]||r.date>treatments[key].date) treatments[key]={date:r.date,clinic:r.clinic};
-  });
+  const treatments={};S.skinRecords.forEach(r=>{const key=r.treatment;if(!treatments[key]||r.date>treatments[key].date)treatments[key]={date:r.date,clinic:r.clinic};});
   const today=new Date();today.setHours(0,0,0,0);
   if(Object.keys(treatments).length){
     h+=`<div class="skin-record-section"><h3>⏱️ 관리별 경과일수</h3>`;
-    Object.entries(treatments).sort((a,b)=>b[1].date.localeCompare(a[1].date)).forEach(([name,info])=>{
-      const d=new Date(info.date+'T00:00:00');
-      const diff=Math.floor((today-d)/864e5);
-      const weeks=Math.floor(diff/7),days=diff%7;
-      const elapsed=weeks>0?`${weeks}주 ${days}일`:`${days}일`;
-      h+=`<div class="skin-record-card">
-        <div><div class="skin-clinic">${name}</div><div class="skin-treatment">${info.clinic} · ${info.date}</div><div class="skin-elapsed">경과: ${elapsed} (${diff}일)</div></div>
-      </div>`;
-    });
+    Object.entries(treatments).sort((a,b)=>b[1].date.localeCompare(a[1].date)).forEach(([name,info])=>{const d=new Date(info.date+'T00:00:00');const diff=Math.floor((today-d)/864e5);const w=Math.floor(diff/7),dd=diff%7;
+      h+=`<div class="skin-record-card"><div><div class="skin-clinic">${escHtml(name)}</div><div class="skin-treatment">${escHtml(info.clinic)} · ${info.date}</div><div class="skin-elapsed">경과: ${w>0?w+'주 '+dd+'일':dd+'일'} (${diff}일)</div></div></div>`;});
     h+=`</div>`;
   }
-
-  // 최근 기록
   const sorted=[...S.skinRecords].sort((a,b)=>b.date.localeCompare(a.date));
   if(sorted.length){
     h+=`<div class="skin-record-section"><h3>📋 최근 기록</h3>`;
-    sorted.slice(0,20).forEach(r=>{
-      const d=new Date(r.date+'T00:00:00');const diff=Math.floor((today-d)/864e5);const w=Math.floor(diff/7),dd=diff%7;
-      h+=`<div class="skin-record-card">
-        <div class="skin-date">${r.date}</div>
-        <div style="flex:1"><div class="skin-clinic">${r.clinic}</div><div class="skin-treatment">${r.treatment}${r.memo?' · '+r.memo:''}</div><div class="skin-elapsed">${diff}일 전 (${w>0?w+'주 '+dd+'일':dd+'일'})</div></div>
-        <div class="skin-record-actions">
-          <button class="idpw-action-btn" onclick="editSkinRecord('${r.id}')">✏️</button>
-          <button class="idpw-action-btn danger" onclick="deleteSkinRecord('${r.id}')">✕</button>
-        </div>
-      </div>`;
-    });
+    sorted.slice(0,20).forEach(r=>{const d=new Date(r.date+'T00:00:00');const diff=Math.floor((today-d)/864e5);const w=Math.floor(diff/7),dd=diff%7;
+      h+=`<div class="skin-record-card"><div class="skin-date">${r.date}</div><div style="flex:1"><div class="skin-clinic">${escHtml(r.clinic)}</div><div class="skin-treatment">${escHtml(r.treatment)}${r.memo?' · '+escHtml(r.memo):''}</div><div class="skin-elapsed">${diff}일 전 (${w>0?w+'주 '+dd+'일':dd+'일'})</div></div><div class="skin-record-actions"><button class="idpw-action-btn" onclick="editSkinRecord('${r.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteSkinRecord('${r.id}')">✕</button></div></div>`;});
     h+=`</div>`;
   }
-
-  // 적립금
-  h+=`<div class="points-section"><h3 style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:10px">💰 피부과별 적립금
-    <button class="points-edit-btn" onclick="openPointsModal()" style="margin-left:auto">+</button></h3>`;
+  h+=`<div class="points-section"><h3 style="font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:10px">💰 피부과별 적립금<button class="points-edit-btn" onclick="openPointsModal()" style="margin-left:auto">+</button></h3>`;
   if(!S.skinPoints.length) h+=`<div style="color:var(--text-light);font-size:13px;padding:12px 0">적립금 정보를 추가하세요</div>`;
-  S.skinPoints.forEach(p=>{
-    h+=`<div class="points-card">
-      <div class="clinic-name">🏥 ${p.clinic}</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="clinic-points">${Number(p.amount).toLocaleString()}원</div>
-        <button class="points-edit-btn" onclick="editPoints('${p.id}')">✏️</button>
-        <button class="points-edit-btn" onclick="deletePoints('${p.id}')" style="color:var(--danger)">✕</button>
-      </div>
-    </div>`;
-  });
+  S.skinPoints.forEach(p=>{h+=`<div class="points-card"><div class="clinic-name">🏥 ${escHtml(p.clinic)}</div><div style="display:flex;align-items:center;gap:8px"><div class="clinic-points">${Number(p.amount).toLocaleString()}원</div><button class="points-edit-btn" onclick="editPoints('${p.id}')">✏️</button><button class="points-edit-btn" onclick="deletePoints('${p.id}')" style="color:var(--danger)">✕</button></div></div>`;});
   h+=`</div>`;
   document.getElementById('contentBody').innerHTML=h;
 }
@@ -780,23 +754,20 @@ function deletePoints(id){if(!confirm('삭제?'))return;S.skinPoints=S.skinPoint
 function openModal(id){document.getElementById(id).classList.add('active');}
 function closeModal(id){document.getElementById(id).classList.remove('active');S.editingId=null;}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active');}));
-
 function openAddModal(){
-  if(S.activeSection==='todo') openTodoModal();
-  else if(S.activeSection==='routine') openRoutineModal();
-  else if(S.activeSection==='tools') openIdpwModal();
-  else if(S.activeSection==='calendar') openSkinModal();
+  if(S.activeSection==='todo')openTodoModal();else if(S.activeSection==='routine')openRoutineModal();
+  else if(S.activeSection==='tools')openIdpwModal();else if(S.activeSection==='calendar')openSkinModal();
 }
 
-// ─ Todo Modal ─
+/* Todo Modal */
 let selectedPriority='medium';
 function selectPriority(v){selectedPriority=v;document.querySelectorAll('#prioritySelect .priority-option').forEach(e=>e.classList.toggle('selected',e.dataset.val===v));}
 function toggleNoti(){document.getElementById('notiToggle').classList.toggle('on');document.getElementById('notiDatetime').classList.toggle('open');}
 function updateTodoSelect(){const sel=document.getElementById('todoListSelect');sel.innerHTML='';S.categories.filter(c=>!c.fixed).forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.icon} ${c.label}</option>`;});}
 function openTodoModal(eid){
   S.editingId=eid||null;updateTodoSelect();
-  if(eid){const t=S.todos.find(x=>x.id===eid);if(!t)return;document.getElementById('todoModalTitle').textContent='✏️ 할일 수정';document.getElementById('todoInput').value=t.text;document.getElementById('todoListSelect').value=t.list;document.getElementById('todoDueDate').value=t.dueDate||'';document.getElementById('todoNote').value=t.note||'';selectPriority(t.priority);if(t.noti){document.getElementById('notiToggle').classList.add('on');document.getElementById('notiDatetime').classList.add('open');document.getElementById('notiDate').value=t.notiDate;document.getElementById('notiTime').value=t.notiTime;}else{document.getElementById('notiToggle').classList.remove('on');document.getElementById('notiDatetime').classList.remove('open');}
-  }else{document.getElementById('todoModalTitle').textContent='✏️ 새 할일 추가';document.getElementById('todoInput').value='';document.getElementById('todoDueDate').value='';document.getElementById('todoNote').value='';selectPriority('medium');document.getElementById('notiToggle').classList.remove('on');document.getElementById('notiDatetime').classList.remove('open');const cat=S.activeSub;if(cat!=='all'&&cat!=='important'&&cat!=='completed')document.getElementById('todoListSelect').value=cat;}
+  if(eid){const t=S.todos.find(x=>x.id===eid);if(!t)return;document.getElementById('todoModalTitle').textContent='✏️ 할일 수정';document.getElementById('todoInput').value=t.text;document.getElementById('todoListSelect').value=t.list;document.getElementById('todoDueDate').value=t.dueDate||'';document.getElementById('todoNote').value=t.note||'';selectPriority(t.priority);if(t.noti){document.getElementById('notiToggle').classList.add('on');document.getElementById('notiDatetime').classList.add('open');document.getElementById('notiDate').value=t.notiDate;document.getElementById('notiTime').value=t.notiTime;}else{document.getElementById('notiToggle').classList.remove('on');document.getElementById('notiDatetime').classList.remove('open');}}
+  else{document.getElementById('todoModalTitle').textContent='✏️ 새 할일 추가';document.getElementById('todoInput').value='';document.getElementById('todoDueDate').value='';document.getElementById('todoNote').value='';selectPriority('medium');document.getElementById('notiToggle').classList.remove('on');document.getElementById('notiDatetime').classList.remove('open');if(S.activeSub!=='all'&&S.activeSub!=='important'&&S.activeSub!=='completed')document.getElementById('todoListSelect').value=S.activeSub;}
   openModal('todoModal');
 }
 function editTodo(id){openTodoModal(id);}
@@ -806,10 +777,10 @@ function saveTodo(){
   const nOn=document.getElementById('notiToggle').classList.contains('on'),nD=document.getElementById('notiDate').value,nT=document.getElementById('notiTime').value;
   if(S.editingId){const t=S.todos.find(x=>x.id===S.editingId);if(t){t.text=text;t.list=list;t.dueDate=due;t.note=note;t.priority=selectedPriority;t.noti=nOn;t.notiDate=nD;t.notiTime=nT;}}
   else S.todos.unshift({id:uid(),text,list,dueDate:due,note,priority:selectedPriority,completed:false,createdAt:Date.now(),noti:nOn,notiDate:nD,notiTime:nT});
-  save();closeModal('todoModal');renderTodo();renderSidebar();scheduleNoti();
+  save();closeModal('todoModal');renderTodo();renderSidebar();
 }
 
-// ─ Routine Modal ─
+/* Routine Modal */
 function selectIcon(el){document.querySelectorAll('#iconSelect .color-option').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');}
 function selectColor(el){document.querySelectorAll('#colorSelect .color-option').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');}
 function toggleDay(el){el.classList.toggle('selected');}
@@ -830,7 +801,7 @@ function saveRoutine(){
   save();closeModal('routineModal');renderContent();
 }
 
-// ─ ID/PW Modal ─
+/* ID/PW Modal */
 let selectedOwner='다인';
 function selectOwner(v){selectedOwner=v;document.querySelectorAll('#ownerSelect .priority-option').forEach(e=>e.classList.toggle('selected',e.dataset.val===v));}
 function openIdpwModal(eid){
@@ -848,7 +819,7 @@ function saveIdpw(){
   save();closeModal('idpwModal');renderIdpw();
 }
 
-// ─ Skin Modal ─
+/* Skin Modal */
 function openSkinModal(eid,dateStr){
   S.editingId=eid||null;
   if(eid){const r=S.skinRecords.find(x=>x.id===eid);if(!r)return;document.getElementById('skinModalTitle').textContent='🏥 기록 수정';document.getElementById('skinDate').value=r.date;document.getElementById('skinClinic').value=r.clinic;document.getElementById('skinTreatment').value=r.treatment;document.getElementById('skinMemo').value=r.memo||'';}
@@ -863,8 +834,6 @@ function saveSkinRecord(){
   else S.skinRecords.push({id:uid(),date,clinic,treatment,memo});
   save();closeModal('skinModal');renderSkin();
 }
-
-// ─ Points Modal ─
 function openPointsModal(eid){
   S.editingId=eid||null;
   if(eid){const p=S.skinPoints.find(x=>x.id===eid);if(!p)return;document.getElementById('pointsModalTitle').textContent='💰 적립금 수정';document.getElementById('pointsClinic').value=p.clinic;document.getElementById('pointsAmount').value=p.amount;}
@@ -880,7 +849,7 @@ function savePoints(){
   save();closeModal('pointsModal');renderSkin();
 }
 
-// ─ Category Modal ─
+/* Category Modal */
 const CAT_EMOJIS=['📁','📂','🏠','🎯','🎨','🏋️','🎓','💡','🔧','🛒','✈️','🎮','🩺','💰','📱','🍽️','🌱','🐾','❤️','🚗'];
 let selCatEmoji=CAT_EMOJIS[0];
 function openCatModal(){
@@ -897,29 +866,17 @@ function saveNewCategory(){
   save();closeModal('catModal');renderSidebar();updateTodoSelect();
 }
 
-/* ═══ CONTEXT MENU ═══ */
+/* Context Menu */
 function showCtx(e,type,id){e.preventDefault();S.contextType=type;S.contextId=id;const m=document.getElementById('contextMenu');m.style.left=Math.min(e.clientX,innerWidth-150)+'px';m.style.top=Math.min(e.clientY,innerHeight-80)+'px';m.classList.add('visible');}
 document.addEventListener('click',()=>document.getElementById('contextMenu').classList.remove('visible'));
 function editContextItem(){if(S.contextType==='todo')openTodoModal(S.contextId);else if(S.contextType==='routine')openRoutineModal(S.contextId);}
-function deleteContextItem(){
-  if(S.contextType==='todo'){S.todos=S.todos.filter(x=>x.id!==S.contextId);save();renderTodo();renderSidebar();}
-  else if(S.contextType==='routine'){if(!confirm('삭제?'))return;S.routines=S.routines.filter(x=>x.id!==S.contextId);save();renderContent();}
-}
+function deleteContextItem(){if(S.contextType==='todo'){S.todos=S.todos.filter(x=>x.id!==S.contextId);save();renderTodo();renderSidebar();}else if(S.contextType==='routine'){if(!confirm('삭제?'))return;S.routines=S.routines.filter(x=>x.id!==S.contextId);save();renderContent();}}
 
-/* ═══ NOTIFICATION ═══ */
-let nTimers=[];
-function scheduleNoti(){nTimers.forEach(t=>clearTimeout(t));nTimers=[];if(!('Notification' in window))return;if(Notification.permission==='default')Notification.requestPermission();const now=Date.now();S.todos.forEach(t=>{if(t.noti&&t.notiDate&&t.notiTime&&!t.completed){const target=new Date(t.notiDate+'T'+t.notiTime+':00').getTime();const diff=target-now;if(diff>0&&diff<864e5*7)nTimers.push(setTimeout(()=>{if(Notification.permission==='granted')new Notification('Routodo',{body:t.text});},diff));}});}
-
-/* ═══ SEARCH ═══ */
+/* Search */
 function toggleSearch(){const q=prompt('검색어:');if(!q)return;const l=q.toLowerCase();const res=S.todos.filter(t=>t.text.toLowerCase().includes(l));document.getElementById('contentTitle').textContent='🔍 '+q;document.getElementById('contentSubtitle').textContent=res.length+'개 결과';document.getElementById('contentBody').innerHTML=res.length?`<div class="todo-list">${res.map(todoHTML).join('')}</div>`:emptyHTML('🔍','결과 없음','');}
 
-function emptyHTML(icon,title,desc){return`<div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-desc">${desc}</div></div>`;}
-
 /* ═══ INIT ═══ */
-function init(){
-  if(isMobile()){document.getElementById('sidebar').classList.remove('hidden');document.getElementById('mainContent').classList.remove('visible');}
-  renderSidebar();renderContent();scheduleNoti();setInterval(scheduleNoti,60000);
-}
+function init(){renderSidebar();renderContent();}
 window.addEventListener('resize',()=>{if(!isMobile()){document.getElementById('sidebar').classList.remove('hidden');document.getElementById('mainContent').classList.remove('visible');}});
 init();
 </script>
