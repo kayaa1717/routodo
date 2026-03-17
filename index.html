@@ -94,37 +94,46 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 .todo-action-btn.danger:hover{background:var(--danger);}
 
 /* ═══ ROUTINE ═══ */
-.routine-week-nav{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 0 6px;}
-.routine-week-nav .week-title{font-size:18px;font-weight:700;text-align:center;}
-.routine-week-nav button{width:32px;height:32px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:14px;color:var(--text-light);display:flex;align-items:center;justify-content:center;transition:0.2s;}
+.routine-week-nav{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 0 8px;}
+.routine-week-nav .week-title{font-size:22px;font-weight:700;text-align:center;min-width:180px;}
+.routine-week-nav button{width:34px;height:34px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:16px;color:var(--text-light);display:flex;align-items:center;justify-content:center;transition:0.2s;}
 .routine-week-nav button:hover{background:var(--bg);color:var(--text);}
-.routine-week-nav .today-btn{padding:4px 12px;border:none;border-radius:14px;background:var(--primary);color:#fff;font-size:12px;font-weight:600;cursor:pointer;width:auto;height:auto;}
+.routine-week-nav .today-btn{padding:5px 14px;border:none;border-radius:14px;background:var(--primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;width:auto;height:auto;}
 .routine-grid{background:var(--card);overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.routine-grid-header{display:grid;grid-template-columns:auto repeat(7,38px);justify-content:start;border-bottom:1px solid var(--border);}
-.routine-grid-header .rg-corner{padding:4px 10px;}
-.routine-grid-header .rg-day{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 0;gap:1px;}
-.routine-grid-header .rg-day .day-name{font-size:12px;font-weight:600;color:var(--text-light);}
-.routine-grid-header .rg-day .day-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text);}
-.routine-grid-header .rg-day.today .day-num{background:var(--primary);color:#fff;}
-.routine-grid-header .rg-day.today .day-name{color:var(--primary);font-weight:700;}
-.routine-grid-row{display:grid;grid-template-columns:auto repeat(7,38px);justify-content:start;border-bottom:1px solid var(--border);}
-.routine-grid-row:last-child{border-bottom:none;}
-.rg-name{display:flex;align-items:center;padding:0 10px;cursor:pointer;height:40px;border-right:1px solid var(--border);white-space:nowrap;}
-.rg-name .r-label{font-size:14px;font-weight:500;color:var(--text);}
-.rg-cell{display:flex;align-items:center;justify-content:center;height:40px;border-right:1px solid var(--border);}
-.rg-cell:last-child{border-right:none;}
-.rg-check{width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.1s;user-select:none;color:transparent;}
-.rg-check:hover{background:#F5F5F5;}
-.rg-check.checked{color:var(--primary);}
-.rg-check.checked::after{content:'✔';font-size:22px;font-weight:700;}
-.rg-check.today-col{background:rgba(33,150,243,0.04);}
-.routine-stats-section{margin-top:12px;}
+.routine-grid table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.routine-grid table col.rg-col-name{width:140px;}
+.routine-grid table col.rg-col-day{/* remaining 7 cols share equally */}
+.routine-grid th,.routine-grid td{border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.routine-grid thead th{padding:8px 2px;font-weight:600;}
+.routine-grid thead th.rg-corner{text-align:left;padding-left:12px;}
+.routine-grid thead th .day-name{font-size:14px;font-weight:600;color:var(--text-light);display:block;}
+.routine-grid thead th .day-num{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:var(--text);margin-top:2px;}
+.routine-grid thead th.today .day-num{background:var(--primary);color:#fff;}
+.routine-grid thead th.today .day-name{color:var(--primary);font-weight:700;}
+.routine-grid thead th.sun .day-name{color:var(--danger);}
+.routine-grid thead th.sat .day-name{color:var(--primary);}
+.routine-grid tbody tr:last-child td{border-bottom:none;}
+.routine-grid tbody td.rg-name-cell{text-align:left;padding:0 12px;height:42px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:500;color:var(--text);border-right:1px solid var(--border);}
+.routine-grid tbody td.rg-name-cell:hover{background:var(--bg);}
+.routine-grid tbody td.rg-day-cell{height:42px;padding:0;position:relative;}
+.routine-grid tbody td.rg-day-cell.today-col{background:rgba(33,150,243,0.04);}
+.rg-check-btn{width:100%;height:100%;min-height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.1s;user-select:none;border:none;background:transparent;font-size:0;color:transparent;}
+.rg-check-btn:hover{background:#F5F5F5;}
+.rg-check-btn.checked{background:transparent;}
+.rg-check-btn.checked::after{content:'';display:block;width:22px;height:22px;border-radius:50%;background:var(--primary);position:relative;}
+.rg-check-btn.checked::before{content:'✓';position:absolute;z-index:1;font-size:14px;font-weight:700;color:#fff;line-height:22px;text-align:center;width:22px;height:22px;}
+/* cleaner check: use a single pseudo with SVG-like check */
+.rg-check-btn.checked{position:relative;font-size:0;}
+.rg-check-btn.checked::after{content:'';display:block;width:24px;height:24px;border-radius:50%;background:var(--primary);}
+.rg-check-btn.checked::before{content:'✓';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:15px;font-weight:700;color:#fff;z-index:1;line-height:1;}
+
+.routine-stats-section{margin-top:14px;}
 .routine-stats-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center;}
-.routine-stats-row .rs-label{font-size:12px;font-weight:600;color:var(--text-light);min-width:44px;display:flex;align-items:center;}
+.routine-stats-row .rs-label{font-size:13px;font-weight:600;color:var(--text-light);min-width:44px;display:flex;align-items:center;}
 .routine-stat-chip{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:6px 12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px;}
 .routine-stat-chip .chip-val{color:var(--primary);}
 
-/* ═══ ID/PW ═══ */
+/* ID/PW */
 .idpw-table-wrap{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow-x:auto;margin-bottom:18px;}
 .idpw-table{width:100%;border-collapse:collapse;font-size:15px;}
 .idpw-table thead th{padding:14px 16px;font-weight:600;font-size:14px;color:var(--text-light);border-bottom:2px solid var(--border);text-align:left;}
@@ -149,7 +158,7 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 .yt-url{font-size:13px;color:var(--text-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .yt-link{padding:8px 16px;border-radius:10px;background:#FF0000;color:#fff;text-decoration:none;font-size:14px;font-weight:600;flex-shrink:0;}
 
-/* ═══ CALENDAR ═══ */
+/* CALENDAR */
 .skin-month-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:18px;}
 .skin-month-nav .month-title{font-size:20px;font-weight:700;min-width:140px;text-align:center;}
 .skin-month-nav button{width:36px;height:36px;border:none;background:var(--card);border-radius:50%;cursor:pointer;font-size:16px;color:var(--text-light);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);}
@@ -220,6 +229,7 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
 @media(max-width:768px){
   .hamburger{display:flex;}
   .sidebar{position:fixed;top:54px;left:0;bottom:0;width:100%;min-width:100%;z-index:50;transition:transform 0.3s;}
@@ -228,17 +238,16 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
   .main-content.visible{transform:translateX(0);}
   .mobile-back{display:flex!important;}
   .fab{bottom:20px;right:16px;width:52px;height:52px;font-size:28px;}
-  .routine-grid{overflow-x:auto;}
-  .routine-grid-header{grid-template-columns:auto repeat(7,34px);}
-  .routine-grid-row{grid-template-columns:auto repeat(7,34px);}
-  .rg-name{padding:0 6px;height:36px;}
-  .rg-name .r-label{font-size:12px;}
-  .rg-cell{height:36px;}
-  .routine-grid-header .rg-day .day-name{font-size:10px;}
-  .routine-grid-header .rg-day .day-num{width:22px;height:22px;font-size:11px;}
-  .rg-check.checked::after{font-size:17px;}
+  .routine-grid table col.rg-col-name{width:80px;}
+  .routine-grid thead th .day-name{font-size:12px;}
+  .routine-grid thead th .day-num{width:24px;height:24px;font-size:14px;}
+  .routine-grid tbody td.rg-name-cell{font-size:12px;padding:0 6px;height:36px;}
+  .routine-grid tbody td.rg-day-cell{height:36px;}
+  .rg-check-btn{min-height:36px;}
+  .rg-check-btn.checked::after{width:20px;height:20px;}
+  .rg-check-btn.checked::before{font-size:12px;width:20px;height:20px;line-height:20px;}
   .routine-week-nav{padding:8px 4px;}
-  .routine-week-nav .week-title{font-size:15px;}
+  .routine-week-nav .week-title{font-size:17px;min-width:140px;}
 }
 @media(min-width:769px){
   .mobile-back{display:none!important;}
@@ -249,7 +258,8 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 </style>
 </head>
 
-<body>
+
+  <body>
 <div class="sync-indicator" id="syncIndicator"></div>
 <div class="top-bar">
   <div style="display:flex;align-items:center;gap:8px;">
@@ -277,48 +287,48 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
 <!-- ROUTINE MODAL (이름만) -->
 <div class="modal-overlay" id="routineModal"><div class="modal">
   <div class="modal-title" id="routineModalTitle">🔄 새 루틴 추가</div>
-  <div class="form-group"><label class="form-label">루틴 이름</label><input class="form-input" id="routineInput" placeholder="어떤 습관을 만들까요?" autocomplete="off"></div>
-  <button class="btn-submit" onclick="saveRoutine()">저장하기</button>
+  <div class="form-group"><label class="form-label">루틴 이름</label><input class="form-input" id="routineInput" placeholder="어떤 루틴을 추가할까요?" autocomplete="off"></div>
+  <button class="btn-submit" onclick="saveRoutine()">저장</button>
 </div></div>
 
 <!-- ID/PW MODAL -->
 <div class="modal-overlay" id="idpwModal"><div class="modal">
-  <div class="modal-title" id="idpwModalTitle">🔑 계정 추가</div>
+  <div class="modal-title" id="idpwModalTitle">🔐 계정 추가</div>
   <div class="form-group"><label class="form-label">사용자</label><div class="priority-select" id="ownerSelect">
     <div class="priority-option selected" data-val="다인" onclick="selectOwner('다인')">다인</div>
     <div class="priority-option" data-val="다훈" onclick="selectOwner('다훈')">다훈</div>
   </div></div>
-  <div class="form-group"><label class="form-label">사이트명</label><input class="form-input" id="idpwSite" placeholder="예: 네이버, 구글..." autocomplete="off"></div>
+  <div class="form-group"><label class="form-label">사이트</label><input class="form-input" id="idpwSite" placeholder="예: 네이버, 구글..." autocomplete="off"></div>
   <div class="form-group"><label class="form-label">ID</label><input class="form-input" id="idpwId" placeholder="아이디" autocomplete="off"></div>
   <div class="form-group"><label class="form-label">PW</label><input class="form-input" id="idpwPw" placeholder="비밀번호" autocomplete="off"></div>
-  <div class="form-group"><label class="form-label">메모 (선택)</label><input class="form-input" id="idpwMemo" placeholder="비고"></div>
-  <button class="btn-submit" onclick="saveIdpw()">저장하기</button>
+  <div class="form-group"><label class="form-label">메모 (선택)</label><input class="form-input" id="idpwMemo" placeholder="추가 메모"></div>
+  <button class="btn-submit" onclick="saveIdpw()">저장</button>
 </div></div>
 
 <!-- YOUTUBE MODAL -->
 <div class="modal-overlay" id="ytModal"><div class="modal">
-  <div class="modal-title" id="ytModalTitle">▶️ 유튜브 채널 추가</div>
-  <div class="form-group"><label class="form-label">채널/영상 이름</label><input class="form-input" id="ytName" placeholder="채널명" autocomplete="off"></div>
+  <div class="modal-title" id="ytModalTitle">📺 유튜브 채널 추가</div>
+  <div class="form-group"><label class="form-label">채널/영상 이름</label><input class="form-input" id="ytName" placeholder="이름" autocomplete="off"></div>
   <div class="form-group"><label class="form-label">URL</label><input class="form-input" id="ytUrl" placeholder="https://youtube.com/..." autocomplete="off"></div>
-  <button class="btn-submit" onclick="saveYt()">저장하기</button>
+  <button class="btn-submit" onclick="saveYt()">저장</button>
 </div></div>
 
 <!-- SKIN RECORD MODAL -->
 <div class="modal-overlay" id="skinModal"><div class="modal">
-  <div class="modal-title" id="skinModalTitle">🏥 피부과 기록 추가</div>
+  <div class="modal-title" id="skinModalTitle">🏥 관리 기록 추가</div>
   <div class="form-group"><label class="form-label">날짜</label><input class="form-input" id="skinDate" type="date"></div>
-  <div class="form-group"><label class="form-label">관리명</label><input class="form-input" id="skinTreatment" placeholder="예: 리프팅, 스케일링..." autocomplete="off"></div>
-  <div class="form-group"><label class="form-label">피부과명</label><input class="form-input" id="skinClinic" placeholder="어느 피부과에서?" autocomplete="off"></div>
-  <div class="form-group"><label class="form-label">메모 (선택)</label><input class="form-input" id="skinMemo" placeholder="추가 메모"></div>
-  <button class="btn-submit" onclick="saveSkinRecord()">저장하기</button>
+  <div class="form-group"><label class="form-label">피부과명</label><input class="form-input" id="skinTreatment" placeholder="예: 연세피부과, 강남피부과..." autocomplete="off"></div>
+  <div class="form-group"><label class="form-label">관리내용</label><input class="form-input" id="skinClinic" placeholder="어떤 관리를 받았나요?" autocomplete="off"></div>
+  <div class="form-group"><label class="form-label">메모 (선택)</label><input class="form-input" id="skinMemo" placeholder="추가 기록"></div>
+  <button class="btn-submit" onclick="saveSkinRecord()">저장</button>
 </div></div>
 
 <!-- POINTS MODAL -->
 <div class="modal-overlay" id="pointsModal"><div class="modal">
-  <div class="modal-title" id="pointsModalTitle">💰 적립금 관리</div>
-  <div class="form-group"><label class="form-label">피부과명</label><input class="form-input" id="pointsClinic" placeholder="피부과 이름" autocomplete="off"></div>
-  <div class="form-group"><label class="form-label">적립금 (원)</label><input class="form-input" id="pointsAmount" type="number" placeholder="0"></div>
-  <button class="btn-submit" onclick="savePoints()">저장하기</button>
+  <div class="modal-title" id="pointsModalTitle">💰 포인트 관리</div>
+  <div class="form-group"><label class="form-label">피부과</label><input class="form-input" id="pointsClinic" placeholder="피부과 이름" autocomplete="off"></div>
+  <div class="form-group"><label class="form-label">포인트 (원)</label><input class="form-input" id="pointsAmount" type="number" placeholder="0"></div>
+  <button class="btn-submit" onclick="savePoints()">저장</button>
 </div></div>
 
 <!-- CATEGORY MODAL -->
@@ -326,15 +336,15 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
   <div class="modal-title">📁 카테고리 추가</div>
   <div class="form-group"><label class="form-label">이름</label><input class="form-input" id="newCatName" placeholder="카테고리 이름" maxlength="20"></div>
   <div class="form-group"><label class="form-label">아이콘</label><div class="color-select" id="catEmojiRow"></div></div>
-  <button class="btn-submit" onclick="saveNewCategory()">추가</button>
+  <button class="btn-submit" onclick="saveNewCategory()">저장</button>
 </div></div>
 
 <!-- CUSTOM CALENDAR MODAL -->
 <div class="modal-overlay" id="customCalModal"><div class="modal">
-  <div class="modal-title">📅 달력 추가</div>
-  <div class="form-group"><label class="form-label">달력 이름</label><input class="form-input" id="customCalName" placeholder="예: 운동 기록..." maxlength="20"></div>
+  <div class="modal-title">📅 캘린더 추가</div>
+  <div class="form-group"><label class="form-label">캘린더 이름</label><input class="form-input" id="customCalName" placeholder="예: 운동기록 ..." maxlength="20"></div>
   <div class="form-group"><label class="form-label">아이콘</label><div class="color-select" id="calEmojiRow"></div></div>
-  <button class="btn-submit" onclick="saveCustomCal()">추가</button>
+  <button class="btn-submit" onclick="saveCustomCal()">저장</button>
 </div></div>
 
 <!-- CUSTOM CALENDAR RECORD MODAL -->
@@ -342,25 +352,24 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);co
   <div class="modal-title" id="customCalRecTitle">📝 기록 추가</div>
   <div class="form-group"><label class="form-label">날짜</label><input class="form-input" id="ccRecDate" type="date"></div>
   <div class="form-group"><label class="form-label">내용</label><input class="form-input" id="ccRecContent" placeholder="내용" autocomplete="off"></div>
-  <div class="form-group"><label class="form-label">메모 (선택)</label><input class="form-input" id="ccRecMemo" placeholder="메모"></div>
-  <button class="btn-submit" onclick="saveCustomCalRec()">저장하기</button>
+  <div class="form-group"><label class="form-label">메모 (선택)</label><input class="form-input" id="ccRecMemo" placeholder="추가메모"></div>
+  <button class="btn-submit" onclick="saveCustomCalRec()">저장</button>
 </div></div>
 
 <!-- CUSTOM TOOL MODAL -->
 <div class="modal-overlay" id="customToolModal"><div class="modal">
-  <div class="modal-title">🛠️ 관리 도구 추가</div>
+  <div class="modal-title">🛠 새 관리 도구 추가</div>
   <div class="form-group"><label class="form-label">도구 이름</label><input class="form-input" id="customToolName" placeholder="예: 메모장..." maxlength="20"></div>
   <div class="form-group"><label class="form-label">아이콘</label><div class="color-select" id="toolEmojiRow"></div></div>
-  <button class="btn-submit" onclick="saveCustomTool()">추가</button>
+  <button class="btn-submit" onclick="saveCustomTool()">저장</button>
 </div></div>
 
 <div class="context-menu" id="contextMenu">
   <div class="context-item" onclick="editContextItem()">✏️ 수정</div>
-  <div class="context-item danger" onclick="deleteContextItem()">🗑️ 삭제</div>
+  <div class="context-item danger" onclick="deleteContextItem()">🗑 삭제</div>
 </div>
 
-
-<script type="module">
+    <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getFirestore,doc,setDoc,getDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp({apiKey:"AIzaSyAOrr-nI2kxze9gvUrbFuejHfP9ctYQme4",authDomain:"routodo-d0c30.firebaseapp.com",projectId:"routodo-d0c30",storageBucket:"routodo-d0c30.firebasestorage.app",messagingSenderId:"695109558401",appId:"1:695109558401:web:577ad52ec9754f802ced80"});
@@ -368,17 +377,17 @@ const db=getFirestore(app),DR=doc(db,"appdata","main");
 
 function showSync(t,m){const e=document.getElementById('syncIndicator');e.className='sync-indicator '+t;e.textContent=m;if(t==='saved')setTimeout(()=>{e.style.display='none';},2000);}
 let saveTimer=null,skip=false;
-function saveToCloud(){clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{try{showSync('saving','⏳ 저장 중...');skip=true;
+function saveToCloud(){clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{try{showSync('saving','☁️ 저장 중...');skip=true;
 const d={categories:S.categories,todos:S.todos,routines:S.routines,routineChecks:S.routineChecks,idpw:S.idpw,youtube:S.youtube,skinRecords:S.skinRecords,skinPoints:S.skinPoints,customCalendars:S.customCalendars,customCalRecords:S.customCalRecords,customTools:S.customTools,todoDividers:S.todoDividers,updatedAt:Date.now()};
 await setDoc(DR,d);showSync('saved','✅ 저장 완료');}catch(e){console.error(e);showSync('error','❌ 저장 실패');}},800);}
-async function loadFromCloud(){try{showSync('loading','📡 불러오는 중...');const snap=await getDoc(DR);if(snap.exists()){applyData(snap.data());showSync('saved','✅ 불러옴');}else{showSync('saved','✅ 새 시작');}}catch(e){console.error(e);showSync('error','❌ 불러오기 실패');}}
+async function loadFromCloud(){try{showSync('loading','📥 불러오는 중...');const snap=await getDoc(DR);if(snap.exists()){applyData(snap.data());showSync('saved','✅ 동기화 완료');}else{showSync('saved','✅ 새 데이터');}}catch(e){console.error(e);showSync('error','❌ 불러오기 실패');}}
 function applyData(d){const keys=['categories','todos','routines','routineChecks','idpw','youtube','skinRecords','skinPoints','customCalendars','customCalRecords','customTools','todoDividers'];keys.forEach(k=>{if(d[k]!==undefined)S[k]=d[k];});saveLocal();renderSidebar();renderContent();}
 onSnapshot(DR,(snap)=>{if(skip){skip=false;return;}if(snap.exists())applyData(snap.data());});
 window.manualSync=async function(){await loadFromCloud();renderSidebar();renderContent();};
 
 const S={
   activeSection:'todo',activeSubId:'all',
-  categories:[{id:'inbox',name:'모두',icon:'📥'},{id:'work',name:'업무',icon:'💼'},{id:'personal',name:'개인',icon:'👤'}],
+  categories:[{id:'inbox',name:'전체',icon:'📥'},{id:'work',name:'업무',icon:'💼'},{id:'personal',name:'개인',icon:'👤'}],
   todos:[],routines:[],routineChecks:{},
   idpw:[],youtube:[],skinRecords:[],skinPoints:[],
   customCalendars:[],customCalRecords:{},customTools:[],todoDividers:{},
@@ -393,19 +402,19 @@ function saveLocal(){try{localStorage.setItem('routodo_data',JSON.stringify({cat
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem('routodo_data'));if(d){const keys=['categories','todos','routines','routineChecks','idpw','youtube','skinRecords','skinPoints','customCalendars','customCalRecords','customTools','todoDividers'];keys.forEach(k=>{if(d[k]!==undefined)S[k]=d[k];});}}catch(e){}}
 function save(){saveLocal();saveToCloud();}
 
-/* ═══ SIDEBAR ═══ */
+/* ── SIDEBAR ── */
 function renderSidebar(){
 const sb=document.getElementById('sidebar');
 const sections=[
-  {id:'todo',icon:'📋',name:'To Do',subs:[...S.categories.map(c=>({id:c.id,icon:c.icon,name:c.name,count:S.todos.filter(t=>(!t.done)&&(c.id==='inbox'||t.category===c.id)).length})),{id:'__add__',icon:'+',name:'카테고리 추가',isAdd:true}]},
+  {id:'todo',icon:'✅',name:'To Do',subs:[...S.categories.map(c=>({id:c.id,icon:c.icon,name:c.name,count:S.todos.filter(t=>(!t.done)&&(c.id==='inbox'||t.category===c.id)).length})),{id:'__add__',icon:'+',name:'카테고리 추가',isAdd:true}]},
   {id:'routine',icon:'🔄',name:'Routine',subs:[]},
-  {id:'calendar',icon:'📅',name:'Calendar',subs:[{id:'skin',icon:'🏥',name:'피부과',count:S.skinRecords.length},...S.customCalendars.map(c=>({id:'cc_'+c.id,icon:c.icon,name:c.name,count:(S.customCalRecords[c.id]||[]).length})),{id:'__addCal__',icon:'+',name:'달력 추가',isAdd:true}]},
-  {id:'tools',icon:'🛠️',name:'Tools',subs:[{id:'idpw',icon:'🔑',name:'ID/PW',count:S.idpw.length},{id:'youtube',icon:'▶️',name:'YouTube',count:S.youtube.length},...S.customTools.map(t=>({id:'ct_'+t.id,icon:t.icon,name:t.name})),{id:'__addTool__',icon:'+',name:'도구 추가',isAdd:true}]}
+  {id:'calendar',icon:'📅',name:'Calendar',subs:[{id:'skin',icon:'🏥',name:'피부과',count:S.skinRecords.length},...S.customCalendars.map(c=>({id:'cc_'+c.id,icon:c.icon,name:c.name,count:(S.customCalRecords[c.id]||[]).length})),{id:'__addCal__',icon:'+',name:'캘린더 추가',isAdd:true}]},
+  {id:'tools',icon:'🛠',name:'Tools',subs:[{id:'idpw',icon:'🔐',name:'ID/PW',count:S.idpw.length},{id:'youtube',icon:'📺',name:'YouTube',count:S.youtube.length},...S.customTools.map(t=>({id:'ct_'+t.id,icon:t.icon,name:t.name})),{id:'__addTool__',icon:'+',name:'도구 추가',isAdd:true}]}
 ];
 let h='';
 sections.forEach(sec=>{
   const isOpen=S.activeSection===sec.id;const hasSubs=sec.subs.length>0;
-  h+=`<div class="nav-section"><div class="nav-section-header${isOpen?' active':''}" onclick="clickSection('${sec.id}')"><span class="icon">${sec.icon}</span><span>${sec.name}</span>${hasSubs?'<span class="arrow">▶</span>':''}</div>`;
+  h+=`<div class="nav-section"><div class="nav-section-header${isOpen?' active':''}" onclick="clickSection('${sec.id}')"><span class="icon">${sec.icon}</span><span>${sec.name}</span>${hasSubs?'<span class="arrow">▸</span>':''}</div>`;
   if(hasSubs){h+=`<div class="nav-sub${isOpen?' open':''}">`;sec.subs.forEach(sub=>{if(sub.isAdd){h+=`<div class="nav-add-row" onclick="clickAddRow('${sub.id}')"><span>+ ${sub.name}</span></div>`;}else{const active=isOpen&&S.activeSubId===sub.id;h+=`<div class="nav-sub-item${active?' active':''}" onclick="clickSub('${sec.id}','${sub.id}')"><span class="sub-icon">${sub.icon}</span><span>${sub.name}</span>${sub.count!==undefined?`<span class="sub-count">${sub.count}</span>`:''}</div>`;}});h+=`</div>`;}
   h+=`</div>`;
 });
@@ -416,7 +425,7 @@ window.clickAddRow=function(id){if(id==='__add__')openModal('catModal');else if(
 window.toggleMobileSidebar=function(){document.getElementById('sidebar').classList.toggle('hidden');document.getElementById('mainContent').classList.remove('visible');};
 window.mobileGoBack=function(){document.getElementById('mainContent').classList.remove('visible');document.getElementById('sidebar').classList.remove('hidden');};
 
-/* ═══ RENDER ═══ */
+/* ── RENDER ── */
 function renderContent(){
   const ct=document.getElementById('contentTitle'),cs=document.getElementById('contentSubtitle'),cb=document.getElementById('contentBody');
   document.getElementById('fabBtn').style.display='flex';
@@ -426,91 +435,116 @@ function renderContent(){
   else if(S.activeSection==='tools')renderToolsPage(ct,cs,cb);
 }
 
-/* ═══ TODO ═══ */
+/* ══════════ TODO ══════════ */
 function renderTodo(ct,cs,cb){
-  const cat=S.categories.find(c=>c.id===S.activeSubId)||S.categories[0];if(!cat)return;
-  ct.innerHTML=`<span>${cat.icon}</span> <span class="content-title-text" contenteditable="true" onblur="renameCat('${cat.id}',this.textContent)">${cat.name}</span>`;
+  const cat=S.categories.find(c=>c.id===S.activeSubId)||S.categories[0];
+  ct.innerHTML=`<span>${cat.icon}</span><span class="content-title-text" contenteditable="true" onblur="renameCat('${cat.id}',this.textContent)">${cat.name}</span>`;
   const todos=cat.id==='inbox'?S.todos:S.todos.filter(t=>t.category===cat.id);
   const active=todos.filter(t=>!t.done),done=todos.filter(t=>t.done);
-  cs.textContent=`${active.length}개 진행 중 · ${done.length}개 완료`;
-  let h=`<div class="inline-add"><div class="inline-add-row"><span style="font-size:20px;color:var(--primary)">+</span><input id="inlineTodoInput" placeholder="새 할일 추가..." onkeydown="if(event.key==='Enter')quickAddTodo()"></div><div class="inline-opts"><select class="inline-opt-select" id="inlineTodoCat">${S.categories.filter(c=>c.id!=='inbox').map(c=>`<option value="${c.id}"${c.id===cat.id?' selected':''}>${c.icon} ${c.name}</option>`).join('')}</select><button class="inline-opt-btn${S._inlinePriority==='high'?' sel':''}" onclick="setInlinePriority('high')">🔴 긴급</button><button class="inline-opt-btn${S._inlinePriority==='medium'?' sel':''}" onclick="setInlinePriority('medium')">🟡 보통</button><button class="inline-opt-btn${S._inlinePriority==='low'?' sel':''}" onclick="setInlinePriority('low')">🟢 낮음</button><button class="inline-opt-btn submit" onclick="quickAddTodo()">추가</button></div></div>`;
-  if(active.length)h+=`<div class="todo-section"><div class="section-header"><span class="section-title">진행 중</span><span class="section-count">${active.length}</span></div><div class="todo-list">${active.map(todoHTML).join('')}</div></div>`;
-  if(done.length)h+=`<div class="todo-section"><div class="section-header"><span class="section-title">완료</span><span class="section-count">${done.length}</span></div><div class="todo-list">${done.map(todoHTML).join('')}</div></div>`;
-  if(!todos.length)h+=`<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">할 일이 없습니다</div><div class="empty-desc">위 입력란에서 새 할일을 추가하세요</div></div>`;
+  cs.textContent=`${active.length}개 할 일`;
+  let h='';
+  /* inline add */
+  h+=`<div class="inline-add"><div class="inline-add-row"><span style="font-size:20px;color:var(--text-light)">+</span><input id="inlineInput" placeholder="새 할 일 추가..." onkeydown="if(event.key==='Enter')addInlineTodo()"></div>`;
+  h+=`<div class="inline-opts">`;
+  ['높음','보통','낮음'].forEach(p=>{h+=`<button class="inline-opt-btn${S._inlinePriority===p?' sel':''}" onclick="setInlinePriority('${p}')">${p==='높음'?'🔴':p==='보통'?'🟡':'🟢'} ${p}</button>`;});
+  if(S.categories.length>1){h+=`<select class="inline-opt-select" id="inlineCatSel">`;S.categories.forEach(c=>{h+=`<option value="${c.id}"${c.id===cat.id?' selected':''}>${c.icon} ${c.name}</option>`;});h+=`</select>`;}
+  h+=`<button class="inline-opt-btn submit" onclick="addInlineTodo()">추가</button></div></div>`;
+  if(active.length){h+=`<div class="todo-section"><div class="section-header"><span class="section-title">진행중</span><span class="section-count">${active.length}</span></div><div class="todo-list">`;active.forEach(t=>{h+=todoItemHTML(t);});h+=`</div></div>`;}
+  if(done.length){h+=`<div class="todo-section"><div class="section-header"><span class="section-title">완료</span><span class="section-count">${done.length}</span></div><div class="todo-list">`;done.forEach(t=>{h+=todoItemHTML(t);});h+=`</div></div>`;}
+  if(!todos.length)h+=`<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">할 일이 없습니다</div><div class="empty-desc">위에서 새 할 일을 추가해 보세요</div></div>`;
   cb.innerHTML=h;
 }
-function todoHTML(t){const pc=t.priority==='high'?'priority-high':t.priority==='medium'?'priority-medium':'priority-low';const tc=t.priority==='high'?'tag-urgent':t.priority==='medium'?'tag-normal':'tag-low';const tl=t.priority==='high'?'긴급':t.priority==='medium'?'보통':'낮음';return`<div class="todo-item${t.done?' completed':''}"><div class="todo-priority-bar ${pc}"></div><div class="todo-checkbox${t.done?' checked':''}" onclick="event.stopPropagation();toggleTodo('${t.id}')"></div><div class="todo-info"><div class="todo-text">${t.text}</div><div class="todo-meta"><span class="todo-tag ${tc}">${tl}</span>${t.date?`<span>📅 ${t.date}</span>`:''}</div></div><div class="todo-actions"><button class="todo-action-btn" onclick="event.stopPropagation();editTodo('${t.id}')">✏️</button><button class="todo-action-btn danger" onclick="event.stopPropagation();deleteTodo('${t.id}')">🗑️</button></div></div>`;}
-window.quickAddTodo=function(){const inp=document.getElementById('inlineTodoInput');const text=inp.value.trim();if(!text)return;const cat=document.getElementById('inlineTodoCat').value;S.todos.push({id:uid(),text,category:cat,priority:S._inlinePriority||'medium',done:false,date:''});S._inlinePriority=null;save();renderSidebar();renderContent();};
-window.setInlinePriority=function(p){S._inlinePriority=S._inlinePriority===p?null:p;renderContent();};
+function todoItemHTML(t){
+  const pClass=t.priority==='높음'?'priority-high':t.priority==='낮음'?'priority-low':'priority-medium';
+  const tagClass=t.priority==='높음'?'tag-urgent':t.priority==='낮음'?'tag-low':'tag-normal';
+  let h=`<div class="todo-item${t.done?' completed':''}" oncontextmenu="showContext(event,'todo','${t.id}')"><div class="todo-priority-bar ${pClass}"></div>`;
+  h+=`<div class="todo-checkbox${t.done?' checked':''}" onclick="toggleTodo('${t.id}')"></div>`;
+  h+=`<div class="todo-info"><div class="todo-text">${t.text}</div><div class="todo-meta">`;
+  if(t.priority)h+=`<span class="todo-tag ${tagClass}">${t.priority}</span>`;
+  h+=`</div></div>`;
+  h+=`<div class="todo-actions"><button class="todo-action-btn" onclick="editTodoInline('${t.id}')">✏️</button><button class="todo-action-btn danger" onclick="deleteTodo('${t.id}')">🗑</button></div></div>`;
+  return h;
+}
+window.setInlinePriority=function(p){S._inlinePriority=S._inlinePriority===p?null:p;renderContent();setTimeout(()=>{document.getElementById('inlineInput')?.focus();},50);};
+window.addInlineTodo=function(){const inp=document.getElementById('inlineInput');const text=inp?.value.trim();if(!text)return;const catSel=document.getElementById('inlineCatSel');const cat=catSel?catSel.value:S.activeSubId;S.todos.unshift({id:uid(),text,done:false,priority:S._inlinePriority||'보통',category:cat,createdAt:Date.now()});S._inlinePriority=null;save();renderSidebar();renderContent();};
 window.toggleTodo=function(id){const t=S.todos.find(x=>x.id===id);if(t){t.done=!t.done;save();renderSidebar();renderContent();}};
-window.deleteTodo=function(id){if(!confirm('삭제?'))return;S.todos=S.todos.filter(t=>t.id!==id);save();renderSidebar();renderContent();};
-window.editTodo=function(id){const t=S.todos.find(x=>x.id===id);if(!t)return;const n=prompt('할일 수정',t.text);if(n!==null&&n.trim()){t.text=n.trim();save();renderContent();}};
+window.deleteTodo=function(id){if(!confirm('삭제할까요?'))return;S.todos=S.todos.filter(t=>t.id!==id);save();renderSidebar();renderContent();};
+window.editTodoInline=function(id){const t=S.todos.find(x=>x.id===id);if(!t)return;const nv=prompt('할 일 수정',t.text);if(nv!==null&&nv.trim()){t.text=nv.trim();save();renderContent();}};
 window.renameCat=function(id,name){const c=S.categories.find(x=>x.id===id);if(c&&name.trim()){c.name=name.trim();save();renderSidebar();}};
 
-/* ═══ ROUTINE ═══ */
+/* ══════════ ROUTINE ══════════ */
 function getWeekDates(offset){
-  const today=new Date();const dow=today.getDay();
-  const monOff=dow===0?-6:1-dow;
-  const mon=new Date(today);mon.setDate(today.getDate()+monOff+(offset*7));
+  const now=new Date();const day=now.getDay();const diff=day===0?-6:1-day;
+  const mon=new Date(now);mon.setDate(now.getDate()+diff+offset*7);mon.setHours(0,0,0,0);
   const dates=[];for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);dates.push(d);}
   return dates;
 }
 function renderRoutinePage(ct,cs,cb){
-  ct.innerHTML='<span>🔄</span> Routine';
-  cs.textContent='';
+  ct.innerHTML='<span>🔄</span><span>Routine</span>';cs.textContent='';
   const dates=getWeekDates(S.routineWeekOffset);
   const dayNames=['월','화','수','목','금','토','일'];
-  const todayStr=fmtDate(new Date());
-  const monD=dates[0];
+  const today=fmtDate(new Date());
+  const m0=dates[0],m6=dates[6];
+  const title=m0.getMonth()===m6.getMonth()?`${m0.getFullYear()}년 ${m0.getMonth()+1}월`:`${m0.getFullYear()}년 ${m0.getMonth()+1}월 ~ ${m6.getMonth()+1}월`;
 
-  let h=`<div class="routine-week-nav">
-    <button onclick="moveRoutineWeek(-1)">◀</button>
-    <div class="week-title">${monD.getFullYear()}년 ${monD.getMonth()+1}월</div>
-    <button onclick="moveRoutineWeek(1)">▶</button>`;
-  if(S.routineWeekOffset!==0)h+=`<button class="today-btn" onclick="moveRoutineWeek(0,true)">오늘</button>`;
+  let h=`<div class="routine-week-nav">`;
+  h+=`<button onclick="moveRoutineWeek(-1)">◀</button>`;
+  h+=`<div class="week-title">${title}</div>`;
+  h+=`<button onclick="moveRoutineWeek(1)">▶</button>`;
+  h+=`<button class="today-btn" onclick="moveRoutineWeek('today')">오늘</button>`;
   h+=`</div>`;
 
-  if(!S.routines.length){h+=`<div class="empty-state"><div class="empty-icon">🔄</div><div class="empty-title">루틴이 없습니다</div><div class="empty-desc">+ 버튼으로 새 루틴을 추가하세요</div></div>`;cb.innerHTML=h;return;}
+  /* table */
+  h+=`<div class="routine-grid"><table><colgroup><col class="rg-col-name">`;
+  for(let i=0;i<7;i++)h+=`<col class="rg-col-day">`;
+  h+=`</colgroup><thead><tr><th class="rg-corner"></th>`;
+  dates.forEach((d,i)=>{
+    const ds=fmtDate(d);const isToday=ds===today;
+    const isSun=i===6,isSat=i===5;
+    let cls='';if(isToday)cls+=' today';if(isSun)cls+=' sun';if(isSat)cls+=' sat';
+    h+=`<th class="${cls.trim()}"><span class="day-name">${dayNames[i]}</span><span class="day-num">${d.getDate()}</span></th>`;
+  });
+  h+=`</tr></thead><tbody>`;
 
-  h+=`<div class="routine-grid"><div class="routine-grid-header"><div class="rg-corner"></div>`;
-  dates.forEach((d,i)=>{const ds=fmtDate(d);const isToday=ds===todayStr;
-    h+=`<div class="rg-day${isToday?' today':''}"><span class="day-name">${dayNames[i]}</span><span class="day-num">${d.getDate()}</span></div>`;});
-  h+=`</div>`;
+  if(S.routines.length===0){
+    h+=`<tr><td colspan="8" style="padding:40px;text-align:center;color:var(--text-light);font-size:15px;">루틴을 추가해 보세요</td></tr>`;
+  }else{
+    S.routines.forEach(r=>{
+      h+=`<tr>`;
+      h+=`<td class="rg-name-cell" onclick="editRoutineClick('${r.id}')">${r.name}</td>`;
+      dates.forEach((d,i)=>{
+        const ds=fmtDate(d);const isToday=ds===today;
+        const key=r.id+'_'+ds;const checked=S.routineChecks[key];
+        h+=`<td class="rg-day-cell${isToday?' today-col':''}"><button class="rg-check-btn${checked?' checked':''}" onclick="toggleRoutineCheck('${r.id}','${ds}')"></button></td>`;
+      });
+      h+=`</tr>`;
+    });
+  }
+  h+=`</tbody></table></div>`;
 
-  S.routines.forEach(r=>{
-    h+=`<div class="routine-grid-row"><div class="rg-name" onclick="editRoutineClick('${r.id}')"><div class="r-label">${r.name}</div></div>`;
-    dates.forEach(d=>{const ds=fmtDate(d);const isToday=ds===todayStr;const key=r.id+'_'+ds;const checked=S.routineChecks[key];
-      h+=`<div class="rg-cell"><div class="rg-check${checked?' checked':''}${isToday?' today-col':''}" onclick="toggleRoutineCheck('${r.id}','${ds}')"></div></div>`;});
-    h+=`</div>`;
+  /* stats */
+  h+=`<div class="routine-stats-section">`;
+  /* daily stats */
+  h+=`<div class="routine-stats-row"><span class="rs-label">📊 일별</span>`;
+  dates.forEach((d,i)=>{
+    const ds=fmtDate(d);
+    let cnt=0;S.routines.forEach(r=>{if(S.routineChecks[r.id+'_'+ds])cnt++;});
+    h+=`<span class="routine-stat-chip"><span>${dayNames[i]}</span> <span class="chip-val">${cnt}/${S.routines.length}</span></span>`;
   });
   h+=`</div>`;
+  /* weekly stats */
+  let weekTotal=0,weekPossible=S.routines.length*7;
+  dates.forEach(d=>{const ds=fmtDate(d);S.routines.forEach(r=>{if(S.routineChecks[r.id+'_'+ds])weekTotal++;});});
+  const weekRate=weekPossible?Math.round(weekTotal/weekPossible*100):0;
+  h+=`<div class="routine-stats-row"><span class="rs-label">📈 주간</span>`;
+  h+=`<span class="routine-stat-chip">달성 <span class="chip-val">${weekTotal}/${weekPossible}</span></span>`;
+  h+=`<span class="routine-stat-chip">달성률 <span class="chip-val">${weekRate}%</span></span>`;
+  h+=`</div></div>`;
 
-  // 통계: 일별 → 주별
-  const todayDateStr=todayStr;
-  let todayChecked=0;
-  S.routines.forEach(r=>{if(S.routineChecks[r.id+'_'+todayDateStr])todayChecked++;});
-  const todayTotal=S.routines.length;
-  const todayPct=todayTotal?Math.round(todayChecked/todayTotal*100):0;
-  const weekTotal=S.routines.length*7;let weekChecked=0;
-  S.routines.forEach(r=>{dates.forEach(d=>{if(S.routineChecks[r.id+'_'+fmtDate(d)])weekChecked++;});});
-  const weekPct=weekTotal?Math.round(weekChecked/weekTotal*100):0;
-  let streak=0;for(let i=6;i>=0;i--){const ds=fmtDate(dates[i]);let all=true;S.routines.forEach(r=>{if(!S.routineChecks[r.id+'_'+ds])all=false;});if(all&&S.routines.length)streak++;else break;}
-
-  h+=`<div class="routine-stats-section">
-    <div class="routine-stats-row"><span class="rs-label">오늘</span>
-      <div class="routine-stat-chip">달성 <span class="chip-val">${todayChecked}/${todayTotal}</span></div>
-      <div class="routine-stat-chip">달성률 <span class="chip-val">${todayPct}%</span></div>
-    </div>
-    <div class="routine-stats-row"><span class="rs-label">이번주</span>
-      <div class="routine-stat-chip">달성 <span class="chip-val">${weekChecked}/${weekTotal}</span></div>
-      <div class="routine-stat-chip">달성률 <span class="chip-val">${weekPct}%</span></div>
-      <div class="routine-stat-chip">연속 올클리어 <span class="chip-val">${streak}일</span></div>
-    </div>
-  </div>`;
   cb.innerHTML=h;
 }
-window.moveRoutineWeek=function(dir,reset){if(reset)S.routineWeekOffset=0;else S.routineWeekOffset+=dir;renderContent();};
-window.toggleRoutineCheck=function(rId,ds){const k=rId+'_'+ds;S.routineChecks[k]=!S.routineChecks[k];if(!S.routineChecks[k])delete S.routineChecks[k];save();renderContent();};
+window.moveRoutineWeek=function(dir){if(dir==='today')S.routineWeekOffset=0;else S.routineWeekOffset+=dir;renderContent();};
+window.toggleRoutineCheck=function(rid,ds){const key=rid+'_'+ds;S.routineChecks[key]=!S.routineChecks[key];save();renderContent();};
 window.editRoutineClick=function(id){
   const r=S.routines.find(x=>x.id===id);if(!r)return;
   S.editingRoutineId=id;
@@ -520,133 +554,275 @@ window.editRoutineClick=function(id){
 };
 window.saveRoutine=function(){
   const name=document.getElementById('routineInput').value.trim();
-  if(!name)return alert('루틴 이름을 입력하세요');
-  if(S.editingRoutineId){const r=S.routines.find(x=>x.id===S.editingRoutineId);if(r)r.name=name;}
-  else{S.routines.push({id:uid(),name,icon:'✔',color:'#2196F3'});}
-  S.editingRoutineId=null;closeAllModals();save();renderSidebar();renderContent();
+  if(!name)return;
+  if(S.editingRoutineId){
+    const r=S.routines.find(x=>x.id===S.editingRoutineId);
+    if(r){r.name=name;}
+    S.editingRoutineId=null;
+  }else{
+    S.routines.push({id:uid(),name});
+  }
+  save();closeModal('routineModal');renderSidebar();renderContent();
 };
 
-/* ═══ CALENDAR ═══ */
-function renderCalendarPage(ct,cs,cb){if(S.activeSubId==='skin')renderSkinCal(ct,cs,cb);else if(S.activeSubId.startsWith('cc_'))renderCustomCal(ct,cs,cb);}
-function renderSkinCal(ct,cs,cb){
-  ct.innerHTML='<span>🏥</span> 피부과';cs.textContent='관리 기록 및 적립금';
-  const y=S.calYear,m=S.calMonth,first=new Date(y,m,1),last=new Date(y,m+1,0),startDay=first.getDay(),todayStr=fmtDate(new Date());
-  let h=`<div class="skin-month-nav"><button onclick="skinMonthNav(-1)">◀</button><div class="month-title">${y}년 ${m+1}월</div><button onclick="skinMonthNav(1)">▶</button></div>`;
-  h+=`<div class="skin-cal"><div class="skin-cal-weekdays"><div class="skin-cal-weekday">일</div><div class="skin-cal-weekday">월</div><div class="skin-cal-weekday">화</div><div class="skin-cal-weekday">수</div><div class="skin-cal-weekday">목</div><div class="skin-cal-weekday">금</div><div class="skin-cal-weekday">토</div></div><div class="skin-cal-days">`;
-  for(let i=0;i<startDay;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${new Date(y,m,0-startDay+i+1).getDate()}</div></div>`;}
-  for(let d=1;d<=last.getDate();d++){const ds=fmtDate(new Date(y,m,d));const isToday=ds===todayStr;const recs=S.skinRecords.filter(r=>r.date===ds);h+=`<div class="skin-cal-day${isToday?' today':''}" onclick="openSkinModal('${ds}')"><div class="day-num">${d}</div>`;recs.forEach(r=>{h+=`<div class="skin-dot">${r.treatment||r.clinic}</div>`;});h+=`</div>`;}
-  const rem=7-((startDay+last.getDate())%7);if(rem<7)for(let i=1;i<=rem;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${i}</div></div>`;}
+/* ══════════ CALENDAR ══════════ */
+function renderCalendarPage(ct,cs,cb){
+  if(S.activeSubId==='skin')renderSkinPage(ct,cs,cb);
+  else if(S.activeSubId.startsWith('cc_'))renderCustomCalPage(ct,cs,cb);
+}
+function renderSkinPage(ct,cs,cb){
+  ct.innerHTML='<span>🏥</span><span>피부과</span>';cs.textContent='관리 기록';
+  const y=S.calYear,m=S.calMonth;
+  let h=`<div class="skin-month-nav"><button onclick="moveSkinMonth(-1)">◀</button><div class="month-title">${y}년 ${m+1}월</div><button onclick="moveSkinMonth(1)">▶</button></div>`;
+  /* calendar grid */
+  h+=`<div class="skin-cal"><div class="skin-cal-weekdays">`;
+  ['일','월','화','수','목','금','토'].forEach(d=>{h+=`<div class="skin-cal-weekday">${d}</div>`;});
+  h+=`</div><div class="skin-cal-days">`;
+  const first=new Date(y,m,1),startDay=first.getDay(),daysInMonth=new Date(y,m+1,0).getDate();
+  const prevDays=new Date(y,m,0).getDate();
+  const today=fmtDate(new Date());
+  for(let i=0;i<startDay;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${prevDays-startDay+1+i}</div></div>`;}
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===today;
+    const recs=S.skinRecords.filter(r=>r.date===ds);
+    h+=`<div class="skin-cal-day${isToday?' today':''}" onclick="openSkinModalForDate('${ds}')"><div class="day-num">${d}</div>`;
+    recs.forEach(r=>{h+=`<div class="skin-dot">${r.clinic||r.treatment}</div>`;});
+    h+=`</div>`;
+  }
+  const totalCells=startDay+daysInMonth;const remaining=totalCells%7===0?0:7-totalCells%7;
+  for(let i=1;i<=remaining;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${i}</div></div>`;}
   h+=`</div></div>`;
 
-  if(S.skinRecords.length){
-    const groups={};
-    S.skinRecords.forEach(r=>{const key=r.treatment||'기타';if(!groups[key])groups[key]=[];groups[key].push(r);});
-    Object.keys(groups).forEach(key=>{groups[key].sort((a,b)=>a.date.localeCompare(b.date));});
-    h+=`<div style="margin-top:8px">`;
-    Object.keys(groups).forEach(treatmentName=>{
-      const recs=groups[treatmentName];
-      h+=`<div class="treatment-group"><div class="treatment-group-header"><span>💆 ${treatmentName}</span><span class="tg-count">총 ${recs.length}회</span></div>`;
-      recs.forEach((r,idx)=>{
-        let termText='';
-        if(idx>0){const prev=new Date(recs[idx-1].date);const curr=new Date(r.date);const diffDays=Math.round((curr-prev)/(864e5));if(diffDays>=7){const w=Math.floor(diffDays/7);const d=diffDays%7;termText=`${w}주${d>0?' '+d+'일':''}`;}else{termText=`${diffDays}일`;}}
-        const elapsedDays=Math.floor((new Date()-new Date(r.date))/(864e5));
-        let elapsedText='';if(elapsedDays===0)elapsedText='오늘';else if(elapsedDays>=7){const w=Math.floor(elapsedDays/7);const d=elapsedDays%7;elapsedText=`${w}주${d>0?' '+d+'일':''}전`;}else elapsedText=`${elapsedDays}일전`;
-        h+=`<div class="treatment-row"><div class="treatment-num">${idx+1}</div><div class="treatment-info"><div class="treatment-date">${r.date} <span style="font-weight:400;color:var(--text-light);font-size:12px">(${elapsedText})</span></div><div class="treatment-clinic">${r.clinic||''}${r.memo?' · '+r.memo:''}</div></div>${idx>0?`<div class="treatment-term">↕ ${termText}</div>`:'<div class="treatment-term" style="background:#E8F5E9;color:#4CAF50">첫 회</div>'}<div class="treatment-actions"><button class="idpw-action-btn" onclick="editSkinRecord('${r.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteSkinRecord('${r.id}')">🗑️</button></div></div>`;
-      });
+  /* treatment groups - grouped by clinic (관리내용) */
+  const groups={};
+  S.skinRecords.forEach(r=>{
+    const key=r.clinic||'기타';
+    if(!groups[key])groups[key]=[];
+    groups[key].push(r);
+  });
+  Object.keys(groups).sort().forEach(gName=>{
+    const list=groups[gName].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    h+=`<div class="treatment-group"><div class="treatment-group-header"><span>${gName}</span><span class="tg-count">${list.length}회</span></div>`;
+    list.forEach((r,i)=>{
+      let term='';
+      if(i>0){const prev=new Date(list[i-1].date),cur=new Date(r.date);const diff=Math.round((cur-prev)/(1000*60*60*24));term=`+${diff}일`;}
+      h+=`<div class="treatment-row" oncontextmenu="showContext(event,'skin','${r.id}')">`;
+      h+=`<div class="treatment-num">${i+1}</div>`;
+      h+=`<div class="treatment-info"><div class="treatment-date">${r.date}</div><div class="treatment-clinic">${r.treatment||''}</div></div>`;
+      if(term)h+=`<div class="treatment-term">${term}</div>`;
+      h+=`<div class="treatment-actions"><button class="idpw-action-btn" onclick="editSkinRecord('${r.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteSkinRecord('${r.id}')">🗑</button></div>`;
       h+=`</div>`;
     });
     h+=`</div>`;
-  }
+  });
+
+  /* points */
   if(S.skinPoints.length){
-    h+=`<div class="points-section" style="margin-top:16px"><h3 style="font-size:16px;font-weight:700;margin-bottom:12px">💰 적립금</h3>`;
-    S.skinPoints.forEach(p=>{h+=`<div class="points-card"><div class="clinic-name">🏥 ${p.clinic}</div><div style="display:flex;align-items:center;gap:8px"><div class="clinic-points">${Number(p.amount).toLocaleString()}원</div><button class="points-edit-btn" onclick="editPoints('${p.id}')">✏️</button><button class="points-edit-btn" onclick="deletePoints('${p.id}')" style="color:var(--danger)">🗑️</button></div></div>`;});
+    h+=`<div class="points-section"><div class="section-header"><span class="section-title">💰 포인트</span></div>`;
+    S.skinPoints.forEach(p=>{
+      h+=`<div class="points-card"><div class="clinic-name">🏥 ${p.clinic}</div><div style="display:flex;align-items:center;gap:8px;"><span class="clinic-points">${Number(p.amount).toLocaleString()}P</span><button class="points-edit-btn" onclick="editPoints('${p.id}')">✏️</button></div></div>`;
+    });
     h+=`</div>`;
   }
   cb.innerHTML=h;
 }
-window.skinMonthNav=function(dir){S.calMonth+=dir;if(S.calMonth<0){S.calMonth=11;S.calYear--;}if(S.calMonth>11){S.calMonth=0;S.calYear++;}renderContent();};
-window.openSkinModal=function(date){S.editingSkinId=null;document.getElementById('skinModalTitle').textContent='🏥 피부과 기록 추가';document.getElementById('skinDate').value=date||fmtDate(new Date());document.getElementById('skinTreatment').value='';document.getElementById('skinClinic').value='';document.getElementById('skinMemo').value='';openModal('skinModal');};
-window.saveSkinRecord=function(){const date=document.getElementById('skinDate').value,treatment=document.getElementById('skinTreatment').value.trim(),clinic=document.getElementById('skinClinic').value.trim(),memo=document.getElementById('skinMemo').value.trim();if(!treatment)return alert('관리명을 입력하세요');if(S.editingSkinId){const r=S.skinRecords.find(x=>x.id===S.editingSkinId);if(r){r.date=date;r.treatment=treatment;r.clinic=clinic;r.memo=memo;}}else{S.skinRecords.push({id:uid(),date,treatment,clinic,memo});}S.editingSkinId=null;closeAllModals();save();renderSidebar();renderContent();};
+window.moveSkinMonth=function(dir){S.calMonth+=dir;if(S.calMonth<0){S.calMonth=11;S.calYear--;}if(S.calMonth>11){S.calMonth=0;S.calYear++;}renderContent();};
+window.openSkinModalForDate=function(ds){S.editingSkinId=null;document.getElementById('skinModalTitle').textContent='🏥 관리 기록 추가';document.getElementById('skinDate').value=ds;document.getElementById('skinTreatment').value='';document.getElementById('skinClinic').value='';document.getElementById('skinMemo').value='';openModal('skinModal');};
+window.saveSkinRecord=function(){
+  const date=document.getElementById('skinDate').value;
+  const treatment=document.getElementById('skinTreatment').value.trim();
+  const clinic=document.getElementById('skinClinic').value.trim();
+  const memo=document.getElementById('skinMemo').value.trim();
+  if(!date)return;
+  if(S.editingSkinId){const r=S.skinRecords.find(x=>x.id===S.editingSkinId);if(r){r.date=date;r.treatment=treatment;r.clinic=clinic;r.memo=memo;}S.editingSkinId=null;}
+  else{S.skinRecords.push({id:uid(),date,treatment,clinic,memo});}
+  save();closeModal('skinModal');renderSidebar();renderContent();
+};
 window.editSkinRecord=function(id){const r=S.skinRecords.find(x=>x.id===id);if(!r)return;S.editingSkinId=id;document.getElementById('skinModalTitle').textContent='🏥 기록 수정';document.getElementById('skinDate').value=r.date;document.getElementById('skinTreatment').value=r.treatment||'';document.getElementById('skinClinic').value=r.clinic||'';document.getElementById('skinMemo').value=r.memo||'';openModal('skinModal');};
-window.deleteSkinRecord=function(id){if(!confirm('삭제?'))return;S.skinRecords=S.skinRecords.filter(r=>r.id!==id);save();renderSidebar();renderContent();};
-window.savePoints=function(){const clinic=document.getElementById('pointsClinic').value.trim(),amount=document.getElementById('pointsAmount').value;if(!clinic)return alert('이름을 입력하세요');if(S.editingPointsId){const p=S.skinPoints.find(x=>x.id===S.editingPointsId);if(p){p.clinic=clinic;p.amount=amount;}}else{S.skinPoints.push({id:uid(),clinic,amount});}S.editingPointsId=null;closeAllModals();save();renderContent();};
-window.editPoints=function(id){const p=S.skinPoints.find(x=>x.id===id);if(!p)return;S.editingPointsId=id;document.getElementById('pointsModalTitle').textContent='💰 적립금 수정';document.getElementById('pointsClinic').value=p.clinic;document.getElementById('pointsAmount').value=p.amount;openModal('pointsModal');};
-window.deletePoints=function(id){if(!confirm('삭제?'))return;S.skinPoints=S.skinPoints.filter(p=>p.id!==id);save();renderContent();};
-
-function renderCustomCal(ct,cs,cb){
-  const ccId=S.activeSubId.replace('cc_',''),cal=S.customCalendars.find(c=>c.id===ccId);if(!cal)return;
-  ct.innerHTML=`<span>${cal.icon}</span> ${cal.name}`;const recs=S.customCalRecords[ccId]||[];cs.textContent=`${recs.length}개 기록`;
-  const y=S.calYear,m=S.calMonth,first=new Date(y,m,1),last=new Date(y,m+1,0),startDay=first.getDay(),todayStr=fmtDate(new Date());
-  let h=`<div class="skin-month-nav"><button onclick="skinMonthNav(-1)">◀</button><div class="month-title">${y}년 ${m+1}월</div><button onclick="skinMonthNav(1)">▶</button></div>`;
-  h+=`<div class="skin-cal"><div class="skin-cal-weekdays"><div class="skin-cal-weekday">일</div><div class="skin-cal-weekday">월</div><div class="skin-cal-weekday">화</div><div class="skin-cal-weekday">수</div><div class="skin-cal-weekday">목</div><div class="skin-cal-weekday">금</div><div class="skin-cal-weekday">토</div></div><div class="skin-cal-days">`;
-  for(let i=0;i<startDay;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${new Date(y,m,0-startDay+i+1).getDate()}</div></div>`;}
-  for(let d=1;d<=last.getDate();d++){const ds=fmtDate(new Date(y,m,d));const isToday=ds===todayStr;const dayRecs=recs.filter(r=>r.date===ds);h+=`<div class="skin-cal-day${isToday?' today':''}" onclick="openCCRecModal('${ccId}','${ds}')"><div class="day-num">${d}</div>`;dayRecs.forEach(r=>{h+=`<div class="skin-dot">${r.content}</div>`;});h+=`</div>`;}
-  const rem=7-((startDay+last.getDate())%7);if(rem<7)for(let i=1;i<=rem;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${i}</div></div>`;}
-  h+=`</div></div>`;
-  const sorted=[...recs].sort((a,b)=>b.date.localeCompare(a.date));
-  if(sorted.length){h+=`<div style="margin-top:8px"><h3 style="font-size:16px;font-weight:700;margin-bottom:12px">📋 기록</h3>`;sorted.forEach(r=>{h+=`<div class="treatment-row" style="background:var(--card);border-radius:12px;box-shadow:var(--shadow);margin-bottom:8px;border:none;padding:12px 16px"><div class="treatment-info"><div class="treatment-date">${r.content}</div><div class="treatment-clinic">${r.date}${r.memo?' · '+r.memo:''}</div></div><div class="treatment-actions" style="opacity:1"><button class="idpw-action-btn" onclick="editCCRec('${ccId}','${r.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteCCRec('${ccId}','${r.id}')">🗑️</button></div></div>`;});h+=`</div>`;}
-  cb.innerHTML=h;
-}
-window.openCCRecModal=function(ccId,date){S._ccId=ccId;S.editingCCRecId=null;document.getElementById('customCalRecTitle').textContent='📝 기록 추가';document.getElementById('ccRecDate').value=date||fmtDate(new Date());document.getElementById('ccRecContent').value='';document.getElementById('ccRecMemo').value='';openModal('customCalRecModal');};
-window.saveCustomCalRec=function(){const ccId=S._ccId;if(!ccId)return;const date=document.getElementById('ccRecDate').value,content=document.getElementById('ccRecContent').value.trim(),memo=document.getElementById('ccRecMemo').value.trim();if(!content)return alert('내용을 입력하세요');if(!S.customCalRecords[ccId])S.customCalRecords[ccId]=[];if(S.editingCCRecId){const r=(S.customCalRecords[ccId]||[]).find(x=>x.id===S.editingCCRecId);if(r){r.date=date;r.content=content;r.memo=memo;}}else{S.customCalRecords[ccId].push({id:uid(),date,content,memo});}S.editingCCRecId=null;closeAllModals();save();renderSidebar();renderContent();};
-window.editCCRec=function(ccId,id){S._ccId=ccId;const r=(S.customCalRecords[ccId]||[]).find(x=>x.id===id);if(!r)return;S.editingCCRecId=id;document.getElementById('customCalRecTitle').textContent='📝 기록 수정';document.getElementById('ccRecDate').value=r.date;document.getElementById('ccRecContent').value=r.content;document.getElementById('ccRecMemo').value=r.memo||'';openModal('customCalRecModal');};
-window.deleteCCRec=function(ccId,id){if(!confirm('삭제?'))return;S.customCalRecords[ccId]=(S.customCalRecords[ccId]||[]).filter(r=>r.id!==id);save();renderSidebar();renderContent();};
-
-/* ═══ TOOLS ═══ */
-function renderToolsPage(ct,cs,cb){if(S.activeSubId==='idpw')renderIdpw(ct,cs,cb);else if(S.activeSubId==='youtube')renderYoutube(ct,cs,cb);}
-function renderIdpw(ct,cs,cb){
-  ct.innerHTML='<span>🔑</span> ID/PW 관리';cs.textContent=`${S.idpw.length}개 계정`;
-  if(!S.idpw.length){cb.innerHTML=`<div class="empty-state"><div class="empty-icon">🔑</div><div class="empty-title">저장된 계정이 없습니다</div></div>`;return;}
-  let h=`<div class="idpw-table-wrap"><table class="idpw-table"><thead><tr><th>사용자</th><th>사이트</th><th>ID</th><th>PW</th><th>메모</th><th></th></tr></thead><tbody>`;
-  S.idpw.forEach(a=>{const cls=a.owner==='다인'?'owner-dain':'owner-dahun';h+=`<tr><td><span class="owner-badge ${cls}">${a.owner}</span></td><td>${a.site}</td><td style="font-family:monospace">${a.uid}</td><td><div class="pw-cell"><span class="pw-mask" id="pw_${a.id}">••••••</span><button class="pw-toggle" onclick="togglePw('${a.id}','${a.pw}')">👁️</button><button class="pw-copy" onclick="copyPw('${a.pw}')">📋</button></div></td><td style="color:var(--text-light)">${a.memo||''}</td><td><div class="idpw-actions"><button class="idpw-action-btn" onclick="editIdpw('${a.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteIdpw('${a.id}')">🗑️</button></div></td></tr>`;});
-  h+=`</tbody></table></div>`;cb.innerHTML=h;
-}
-window.togglePw=function(id,pw){const el=document.getElementById('pw_'+id);el.textContent=el.textContent==='••••••'?pw:'••••••';};
-window.copyPw=function(pw){navigator.clipboard.writeText(pw).then(()=>alert('복사됨!'));};
-window.saveIdpw=function(){const owner=document.querySelector('#ownerSelect .selected')?.dataset.val||'다인',site=document.getElementById('idpwSite').value.trim(),id=document.getElementById('idpwId').value.trim(),pw=document.getElementById('idpwPw').value.trim(),memo=document.getElementById('idpwMemo').value.trim();if(!site||!id)return alert('사이트명과 ID를 입력하세요');if(S.editingIdpwId){const a=S.idpw.find(x=>x.id===S.editingIdpwId);if(a){a.owner=owner;a.site=site;a.uid=id;a.pw=pw;a.memo=memo;}}else{S.idpw.push({id:uid(),owner,site,uid:id,pw,memo});}S.editingIdpwId=null;closeAllModals();save();renderSidebar();renderContent();};
-window.editIdpw=function(id){const a=S.idpw.find(x=>x.id===id);if(!a)return;S.editingIdpwId=id;document.getElementById('idpwModalTitle').textContent='🔑 계정 수정';selectOwner(a.owner);document.getElementById('idpwSite').value=a.site;document.getElementById('idpwId').value=a.uid;document.getElementById('idpwPw').value=a.pw;document.getElementById('idpwMemo').value=a.memo||'';openModal('idpwModal');};
-window.deleteIdpw=function(id){if(!confirm('삭제?'))return;S.idpw=S.idpw.filter(a=>a.id!==id);save();renderSidebar();renderContent();};
-window.selectOwner=function(val){document.querySelectorAll('#ownerSelect .priority-option').forEach(el=>el.classList.toggle('selected',el.dataset.val===val));};
-
-function renderYoutube(ct,cs,cb){
-  ct.innerHTML='<span>▶️</span> YouTube';cs.textContent=`${S.youtube.length}개 채널`;
-  if(!S.youtube.length){cb.innerHTML=`<div class="empty-state"><div class="empty-icon">▶️</div><div class="empty-title">등록된 채널이 없습니다</div></div>`;return;}
-  let h='';S.youtube.forEach(y=>{h+=`<div class="yt-card"><div class="yt-icon">▶️</div><div class="yt-info"><div class="yt-name">${y.name}</div><div class="yt-url">${y.url}</div></div><a class="yt-link" href="${y.url}" target="_blank">열기</a><div class="idpw-actions" style="margin-left:4px"><button class="idpw-action-btn" onclick="editYt('${y.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteYt('${y.id}')">🗑️</button></div></div>`;});
-  cb.innerHTML=h;
-}
-window.saveYt=function(){const name=document.getElementById('ytName').value.trim(),url=document.getElementById('ytUrl').value.trim();if(!name)return alert('채널명을 입력하세요');if(S.editingYtId){const y=S.youtube.find(x=>x.id===S.editingYtId);if(y){y.name=name;y.url=url;}}else{S.youtube.push({id:uid(),name,url});}S.editingYtId=null;closeAllModals();save();renderSidebar();renderContent();};
-window.editYt=function(id){const y=S.youtube.find(x=>x.id===id);if(!y)return;S.editingYtId=id;document.getElementById('ytModalTitle').textContent='▶️ 채널 수정';document.getElementById('ytName').value=y.name;document.getElementById('ytUrl').value=y.url;openModal('ytModal');};
-window.deleteYt=function(id){if(!confirm('삭제?'))return;S.youtube=S.youtube.filter(y=>y.id!==id);save();renderSidebar();renderContent();};
-
-/* ═══ CATEGORY/CAL/TOOL ═══ */
-const EMOJIS=['📁','📋','📌','🎯','💡','🏠','🛒','📚','🎓','🏋️','🎨','🎮','💻','🚗','✈️','🎵','❤️','⭐','🌟','🔥'];
-function initEmojis(){['catEmojiRow','calEmojiRow','toolEmojiRow'].forEach(rid=>{const el=document.getElementById(rid);if(!el)return;const prefix=rid.replace('EmojiRow','');el.innerHTML=EMOJIS.map((e,i)=>`<div class="color-option${i===0?' selected':''}" data-icon="${e}" onclick="selectEmoji('${prefix}',this)" style="background:#F0F0F0;display:flex;align-items:center;justify-content:center;font-size:18px">${e}</div>`).join('');});}
-window.selectEmoji=function(prefix,el){document.querySelectorAll(`#${prefix}EmojiRow .color-option`).forEach(e=>e.classList.remove('selected'));el.classList.add('selected');};
-window.saveNewCategory=function(){const name=document.getElementById('newCatName').value.trim();if(!name)return alert('이름을 입력하세요');const icon=document.querySelector('#catEmojiRow .selected')?.dataset.icon||'📁';S.categories.push({id:uid(),name,icon});document.getElementById('newCatName').value='';closeAllModals();save();renderSidebar();renderContent();};
-window.saveCustomCal=function(){const name=document.getElementById('customCalName').value.trim();if(!name)return alert('이름을 입력하세요');const icon=document.querySelector('#calEmojiRow .selected')?.dataset.icon||'📅';S.customCalendars.push({id:uid(),name,icon});document.getElementById('customCalName').value='';closeAllModals();save();renderSidebar();};
-window.saveCustomTool=function(){const name=document.getElementById('customToolName').value.trim();if(!name)return alert('이름을 입력하세요');const icon=document.querySelector('#toolEmojiRow .selected')?.dataset.icon||'🛠️';S.customTools.push({id:uid(),name,icon});document.getElementById('customToolName').value='';closeAllModals();save();renderSidebar();};
-
-/* ═══ MODALS ═══ */
-function openModal(id){document.getElementById(id).classList.add('active');}
-function closeAllModals(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('active'));S.editingRoutineId=null;S.editingIdpwId=null;S.editingYtId=null;S.editingSkinId=null;S.editingPointsId=null;S.editingCCRecId=null;}
-document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeAllModals();});});
-window.openAddModal=function(){const sec=S.activeSection;
-  if(sec==='todo'){document.getElementById('inlineTodoInput')?.focus();return;}
-  if(sec==='routine'){S.editingRoutineId=null;document.getElementById('routineModalTitle').textContent='🔄 새 루틴 추가';document.getElementById('routineInput').value='';openModal('routineModal');}
-  if(sec==='tools'){if(S.activeSubId==='idpw'){S.editingIdpwId=null;document.getElementById('idpwModalTitle').textContent='🔑 계정 추가';['idpwSite','idpwId','idpwPw','idpwMemo'].forEach(id=>document.getElementById(id).value='');selectOwner('다인');openModal('idpwModal');}else if(S.activeSubId==='youtube'){S.editingYtId=null;document.getElementById('ytModalTitle').textContent='▶️ 유튜브 채널 추가';document.getElementById('ytName').value='';document.getElementById('ytUrl').value='';openModal('ytModal');}}
-  if(sec==='calendar'){if(S.activeSubId==='skin')openSkinModal();else if(S.activeSubId.startsWith('cc_'))openCCRecModal(S.activeSubId.replace('cc_',''));}
+window.deleteSkinRecord=function(id){if(!confirm('삭제할까요?'))return;S.skinRecords=S.skinRecords.filter(r=>r.id!==id);save();renderSidebar();renderContent();};
+window.editPoints=function(id){const p=S.skinPoints.find(x=>x.id===id);if(!p)return;S.editingPointsId=id;document.getElementById('pointsModalTitle').textContent='💰 포인트 수정';document.getElementById('pointsClinic').value=p.clinic;document.getElementById('pointsAmount').value=p.amount;openModal('pointsModal');};
+window.savePoints=function(){
+  const clinic=document.getElementById('pointsClinic').value.trim();
+  const amount=document.getElementById('pointsAmount').value;
+  if(!clinic)return;
+  if(S.editingPointsId){const p=S.skinPoints.find(x=>x.id===S.editingPointsId);if(p){p.clinic=clinic;p.amount=amount;}S.editingPointsId=null;}
+  else{S.skinPoints.push({id:uid(),clinic,amount});}
+  save();closeModal('pointsModal');renderContent();
 };
 
-/* ═══ CONTEXT ═══ */
-window.showContext=function(e,type,id){e.preventDefault();e.stopPropagation();S.contextType=type;S.contextTarget=id;const cm=document.getElementById('contextMenu');cm.style.left=e.clientX+'px';cm.style.top=e.clientY+'px';cm.classList.add('visible');};
-document.addEventListener('click',()=>document.getElementById('contextMenu').classList.remove('visible'));
-window.editContextItem=function(){if(S.contextType==='todo')editTodo(S.contextTarget);else if(S.contextType==='skin')editSkinRecord(S.contextTarget);};
-window.deleteContextItem=function(){if(S.contextType==='todo')deleteTodo(S.contextTarget);else if(S.contextType==='skin')deleteSkinRecord(S.contextTarget);};
+/* custom cal page */
+function renderCustomCalPage(ct,cs,cb){
+  const ccId=S.activeSubId.replace('cc_','');
+  const cal=S.customCalendars.find(c=>c.id===ccId);
+  if(!cal){cb.innerHTML='';return;}
+  ct.innerHTML=`<span>${cal.icon}</span><span class="content-title-text" contenteditable="true" onblur="renameCustomCal('${ccId}',this.textContent)">${cal.name}</span>`;
+  cs.textContent='';
+  const y=S.calYear,m=S.calMonth;
+  const recs=S.customCalRecords[ccId]||[];
+  let h=`<div class="skin-month-nav"><button onclick="moveSkinMonth(-1)">◀</button><div class="month-title">${y}년 ${m+1}월</div><button onclick="moveSkinMonth(1)">▶</button></div>`;
+  h+=`<div class="skin-cal"><div class="skin-cal-weekdays">`;
+  ['일','월','화','수','목','금','토'].forEach(d=>{h+=`<div class="skin-cal-weekday">${d}</div>`;});
+  h+=`</div><div class="skin-cal-days">`;
+  const first=new Date(y,m,1),startDay=first.getDay(),daysInMonth=new Date(y,m+1,0).getDate();
+  const prevDays=new Date(y,m,0).getDate();const today=fmtDate(new Date());
+  for(let i=0;i<startDay;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${prevDays-startDay+1+i}</div></div>`;}
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const isToday=ds===today;
+    const dayRecs=recs.filter(r=>r.date===ds);
+    h+=`<div class="skin-cal-day${isToday?' today':''}" onclick="openCCRecModal('${ccId}','${ds}')"><div class="day-num">${d}</div>`;
+    dayRecs.forEach(r=>{h+=`<div class="skin-dot">${r.content}</div>`;});h+=`</div>`;
+  }
+  const totalCells=startDay+daysInMonth;const remaining=totalCells%7===0?0:7-totalCells%7;
+  for(let i=1;i<=remaining;i++){h+=`<div class="skin-cal-day other"><div class="day-num">${i}</div></div>`;}
+  h+=`</div></div>`;
 
-/* ═══ INIT ═══ */
-loadLocal();initEmojis();
+  /* records list */
+  const sorted=[...recs].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(sorted.length){
+    h+=`<div class="treatment-group"><div class="treatment-group-header"><span>기록</span><span class="tg-count">${sorted.length}건</span></div>`;
+    sorted.forEach((r,i)=>{
+      h+=`<div class="treatment-row" oncontextmenu="showContext(event,'ccrec','${ccId}|${r.id}')"><div class="treatment-num">${sorted.length-i}</div><div class="treatment-info"><div class="treatment-date">${r.date}</div><div class="treatment-clinic">${r.content}${r.memo?' · '+r.memo:''}</div></div>`;
+      h+=`<div class="treatment-actions"><button class="idpw-action-btn" onclick="editCCRec('${ccId}','${r.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteCCRec('${ccId}','${r.id}')">🗑</button></div></div>`;
+    });
+    h+=`</div>`;
+  }
+  cb.innerHTML=h;
+}
+window.renameCustomCal=function(id,name){const c=S.customCalendars.find(x=>x.id===id);if(c&&name.trim()){c.name=name.trim();save();renderSidebar();}};
+window.openCCRecModal=function(ccId,ds){S._ccId=ccId;S.editingCCRecId=null;document.getElementById('customCalRecTitle').textContent='📝 기록 추가';document.getElementById('ccRecDate').value=ds;document.getElementById('ccRecContent').value='';document.getElementById('ccRecMemo').value='';openModal('customCalRecModal');};
+window.saveCustomCalRec=function(){
+  const ccId=S._ccId;if(!ccId)return;
+  const date=document.getElementById('ccRecDate').value;const content=document.getElementById('ccRecContent').value.trim();const memo=document.getElementById('ccRecMemo').value.trim();
+  if(!date||!content)return;
+  if(!S.customCalRecords[ccId])S.customCalRecords[ccId]=[];
+  if(S.editingCCRecId){const r=(S.customCalRecords[ccId]||[]).find(x=>x.id===S.editingCCRecId);if(r){r.date=date;r.content=content;r.memo=memo;}S.editingCCRecId=null;}
+  else{S.customCalRecords[ccId].push({id:uid(),date,content,memo});}
+  save();closeModal('customCalRecModal');renderSidebar();renderContent();
+};
+window.editCCRec=function(ccId,recId){S._ccId=ccId;const r=(S.customCalRecords[ccId]||[]).find(x=>x.id===recId);if(!r)return;S.editingCCRecId=recId;document.getElementById('customCalRecTitle').textContent='📝 기록 수정';document.getElementById('ccRecDate').value=r.date;document.getElementById('ccRecContent').value=r.content;document.getElementById('ccRecMemo').value=r.memo||'';openModal('customCalRecModal');};
+window.deleteCCRec=function(ccId,recId){if(!confirm('삭제할까요?'))return;S.customCalRecords[ccId]=(S.customCalRecords[ccId]||[]).filter(x=>x.id!==recId);save();renderSidebar();renderContent();};
+
+/* ══════════ TOOLS ══════════ */
+function renderToolsPage(ct,cs,cb){
+  if(S.activeSubId==='idpw')renderIdpw(ct,cs,cb);
+  else if(S.activeSubId==='youtube')renderYoutube(ct,cs,cb);
+  else if(S.activeSubId.startsWith('ct_'))renderCustomTool(ct,cs,cb);
+}
+function renderIdpw(ct,cs,cb){
+  ct.innerHTML='<span>🔐</span><span>ID / PW</span>';cs.textContent=`${S.idpw.length}개 계정`;
+  if(!S.idpw.length){cb.innerHTML=`<div class="empty-state"><div class="empty-icon">🔐</div><div class="empty-title">저장된 계정이 없습니다</div></div>`;return;}
+  let h=`<div class="idpw-table-wrap"><table class="idpw-table"><thead><tr><th>사용자</th><th>사이트</th><th>ID</th><th>PW</th><th>메모</th><th></th></tr></thead><tbody>`;
+  S.idpw.forEach(a=>{
+    const ownerClass=a.owner==='다인'?'owner-dain':'owner-dahun';
+    h+=`<tr oncontextmenu="showContext(event,'idpw','${a.id}')"><td><span class="owner-badge ${ownerClass}">${a.owner}</span></td><td>${a.site}</td><td>${a.uid||''}</td>`;
+    h+=`<td><div class="pw-cell"><span class="pw-mask" id="pw_${a.id}">••••••</span><button class="pw-toggle" onclick="togglePw('${a.id}','${a.pw}')">👁</button><button class="pw-copy" onclick="copyPw('${a.pw}')">📋</button></div></td>`;
+    h+=`<td>${a.memo||''}</td><td><div class="idpw-actions"><button class="idpw-action-btn" onclick="editIdpw('${a.id}')">✏️</button><button class="idpw-action-btn danger" onclick="deleteIdpw('${a.id}')">🗑</button></div></td></tr>`;
+  });
+  h+=`</tbody></table></div>`;cb.innerHTML=h;
+}
+window.togglePw=function(id,pw){const el=document.getElementById('pw_'+id);if(el.textContent==='••••••')el.textContent=pw;else el.textContent='••••••';};
+window.copyPw=function(pw){navigator.clipboard?.writeText(pw);};
+window.selectOwner=function(val){document.querySelectorAll('#ownerSelect .priority-option').forEach(el=>{el.classList.toggle('selected',el.dataset.val===val);});};
+window.saveIdpw=function(){
+  const owner=document.querySelector('#ownerSelect .priority-option.selected')?.dataset.val||'다인';
+  const site=document.getElementById('idpwSite').value.trim();
+  const id=document.getElementById('idpwId').value.trim();
+  const pw=document.getElementById('idpwPw').value.trim();
+  const memo=document.getElementById('idpwMemo').value.trim();
+  if(!site)return;
+  if(S.editingIdpwId){const a=S.idpw.find(x=>x.id===S.editingIdpwId);if(a){a.owner=owner;a.site=site;a.uid=id;a.pw=pw;a.memo=memo;}S.editingIdpwId=null;}
+  else{S.idpw.push({id:uid(),owner,site,uid:id,pw,memo});}
+  save();closeModal('idpwModal');renderSidebar();renderContent();
+};
+window.editIdpw=function(id){const a=S.idpw.find(x=>x.id===id);if(!a)return;S.editingIdpwId=id;document.getElementById('idpwModalTitle').textContent='🔐 계정 수정';selectOwner(a.owner);document.getElementById('idpwSite').value=a.site;document.getElementById('idpwId').value=a.uid||'';document.getElementById('idpwPw').value=a.pw||'';document.getElementById('idpwMemo').value=a.memo||'';openModal('idpwModal');};
+window.deleteIdpw=function(id){if(!confirm('삭제할까요?'))return;S.idpw=S.idpw.filter(a=>a.id!==id);save();renderSidebar();renderContent();};
+
+function renderYoutube(ct,cs,cb){
+  ct.innerHTML='<span>📺</span><span>YouTube</span>';cs.textContent=`${S.youtube.length}개 채널`;
+  if(!S.youtube.length){cb.innerHTML=`<div class="empty-state"><div class="empty-icon">📺</div><div class="empty-title">저장된 채널이 없습니다</div></div>`;return;}
+  let h='';
+  S.youtube.forEach(y=>{
+    h+=`<div class="yt-card" oncontextmenu="showContext(event,'youtube','${y.id}')"><div class="yt-icon">▶</div><div class="yt-info"><div class="yt-name">${y.name}</div><div class="yt-url">${y.url}</div></div><a class="yt-link" href="${y.url}" target="_blank">이동</a></div>`;
+  });
+  cb.innerHTML=h;
+}
+window.saveYt=function(){
+  const name=document.getElementById('ytName').value.trim();const url=document.getElementById('ytUrl').value.trim();
+  if(!name)return;
+  if(S.editingYtId){const y=S.youtube.find(x=>x.id===S.editingYtId);if(y){y.name=name;y.url=url;}S.editingYtId=null;}
+  else{S.youtube.push({id:uid(),name,url});}
+  save();closeModal('ytModal');renderSidebar();renderContent();
+};
+window.editYt=function(id){const y=S.youtube.find(x=>x.id===id);if(!y)return;S.editingYtId=id;document.getElementById('ytModalTitle').textContent='📺 채널 수정';document.getElementById('ytName').value=y.name;document.getElementById('ytUrl').value=y.url;openModal('ytModal');};
+window.deleteYt=function(id){if(!confirm('삭제할까요?'))return;S.youtube=S.youtube.filter(y=>y.id!==id);save();renderSidebar();renderContent();};
+
+function renderCustomTool(ct,cs,cb){
+  const tId=S.activeSubId.replace('ct_','');
+  const tool=S.customTools.find(t=>t.id===tId);
+  if(!tool){cb.innerHTML='';return;}
+  ct.innerHTML=`<span>${tool.icon}</span><span>${tool.name}</span>`;
+  cs.textContent='커스텀 도구';
+  cb.innerHTML=`<div class="empty-state"><div class="empty-icon">${tool.icon}</div><div class="empty-title">${tool.name}</div><div class="empty-desc">이 도구의 기능을 추가해 보세요</div></div>`;
+}
+
+/* ── MODALS ── */
+function openModal(id){document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+window.openModal=openModal;window.closeModal=closeModal;
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)closeModal(el.id);});});
+
+window.openAddModal=function(){
+  if(S.activeSection==='routine'){S.editingRoutineId=null;document.getElementById('routineModalTitle').textContent='🔄 새 루틴 추가';document.getElementById('routineInput').value='';openModal('routineModal');}
+  else if(S.activeSection==='calendar'){
+    if(S.activeSubId==='skin'){S.editingSkinId=null;document.getElementById('skinModalTitle').textContent='🏥 관리 기록 추가';document.getElementById('skinDate').value=fmtDate(new Date());document.getElementById('skinTreatment').value='';document.getElementById('skinClinic').value='';document.getElementById('skinMemo').value='';openModal('skinModal');}
+    else if(S.activeSubId.startsWith('cc_')){openCCRecModal(S.activeSubId.replace('cc_',''),fmtDate(new Date()));}
+  }
+  else if(S.activeSection==='tools'){
+    if(S.activeSubId==='idpw'){S.editingIdpwId=null;document.getElementById('idpwModalTitle').textContent='🔐 계정 추가';selectOwner('다인');document.getElementById('idpwSite').value='';document.getElementById('idpwId').value='';document.getElementById('idpwPw').value='';document.getElementById('idpwMemo').value='';openModal('idpwModal');}
+    else if(S.activeSubId==='youtube'){S.editingYtId=null;document.getElementById('ytModalTitle').textContent='📺 유튜브 채널 추가';document.getElementById('ytName').value='';document.getElementById('ytUrl').value='';openModal('ytModal');}
+  }
+  else if(S.activeSection==='todo'){document.getElementById('inlineInput')?.focus();}
+};
+
+/* category / calendar / tool creation */
+const EMOJIS=['📁','💼','👤','🏠','🎯','💡','📚','🎨','🎵','🏋️','✈️','🍕','❤️','⭐','🔥','🌈','🎁','📸','🛒','💰','🏥','💊','🩺','🧴','✂️','💉','🌿','🧘','🏃','🍎','📅','📝','🔧','📊','🎓','🏖','🐱','🐶','🌸','🍀'];
+function initEmojis(){
+  ['catEmojiRow','calEmojiRow','toolEmojiRow'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML=EMOJIS.map((e,i)=>`<div class="color-option${i===0?' selected':''}" onclick="pickEmoji('${id}',this)" style="display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--bg);border-radius:10px;">${e}</div>`).join('');
+  });
+}
+window.pickEmoji=function(rowId,el){document.querySelectorAll(`#${rowId} .color-option`).forEach(e=>e.classList.remove('selected'));el.classList.add('selected');};
+function getSelectedEmoji(rowId){const el=document.querySelector(`#${rowId} .color-option.selected`);return el?el.textContent:'📁';}
+window.saveNewCategory=function(){const name=document.getElementById('newCatName').value.trim();if(!name)return;const icon=getSelectedEmoji('catEmojiRow');S.categories.push({id:uid(),name,icon});save();closeModal('catModal');renderSidebar();document.getElementById('newCatName').value='';};
+window.saveCustomCal=function(){const name=document.getElementById('customCalName').value.trim();if(!name)return;const icon=getSelectedEmoji('calEmojiRow');S.customCalendars.push({id:uid(),name,icon});save();closeModal('customCalModal');renderSidebar();document.getElementById('customCalName').value='';};
+window.saveCustomTool=function(){const name=document.getElementById('customToolName').value.trim();if(!name)return;const icon=getSelectedEmoji('toolEmojiRow');S.customTools.push({id:uid(),name,icon});save();closeModal('customToolModal');renderSidebar();document.getElementById('customToolName').value='';};
+
+/* context menu */
+window.showContext=function(e,type,id){e.preventDefault();S.contextType=type;S.contextTarget=id;const cm=document.getElementById('contextMenu');cm.style.left=e.clientX+'px';cm.style.top=e.clientY+'px';cm.classList.add('visible');};
+document.addEventListener('click',()=>{document.getElementById('contextMenu').classList.remove('visible');});
+window.editContextItem=function(){
+  const t=S.contextType,id=S.contextTarget;
+  if(t==='todo')editTodoInline(id);
+  else if(t==='idpw')editIdpw(id);
+  else if(t==='youtube')editYt(id);
+  else if(t==='skin')editSkinRecord(id);
+  else if(t==='ccrec'){const[ccId,recId]=id.split('|');editCCRec(ccId,recId);}
+};
+window.deleteContextItem=function(){
+  const t=S.contextType,id=S.contextTarget;
+  if(t==='todo')deleteTodo(id);
+  else if(t==='idpw')deleteIdpw(id);
+  else if(t==='youtube')deleteYt(id);
+  else if(t==='skin')deleteSkinRecord(id);
+  else if(t==='ccrec'){const[ccId,recId]=id.split('|');deleteCCRec(ccId,recId);}
+};
+
+/* ── INIT ── */
+loadLocal();
+initEmojis();
 loadFromCloud().then(()=>{renderSidebar();renderContent();});
-renderSidebar();renderContent();
 </script>
 </body>
 </html>
